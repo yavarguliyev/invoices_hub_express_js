@@ -10,7 +10,7 @@ export interface IExpressServerInfrastructure {
 }
 
 export class ExpressServerInfrastructure implements IExpressServerInfrastructure {
-  private server: Express | null = null;
+  private server?: Express;
 
   public constructor () {}
 
@@ -28,7 +28,6 @@ export class ExpressServerInfrastructure implements IExpressServerInfrastructure
       routePrefix: '/api/v1',
       controllers: [HealthcheckController, UsersController],
       middlewares: [ErrorHandlerMiddleware],
-      classTransformer: false,
       defaultErrorHandler: false
     });
   }

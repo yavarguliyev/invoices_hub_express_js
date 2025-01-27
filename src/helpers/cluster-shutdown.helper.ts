@@ -9,36 +9,35 @@ import { DbConnectionInfrastructure } from 'infrastructure/db-connection.infrast
 export class ClusterShutdownHelper {
   static async shutDown (httpServer: http.Server): Promise<void> {
     try {
-      await new Promise<void>((resolve, reject) => httpServer.close((err) => (err ? reject(err) : resolve())));
+      if (httpServer.listening) {
+        await new Promise<void>((resolve, reject) => httpServer.close((err) => (err ? reject(err) : resolve())));
+      }
+
+      await this.disconnectServices();
+
+      if (cluster.isPrimary) {
+        await this.shutDownWorkers();
+      }
     } catch (err: any) {
       LoggerHelper.log(`Error during shutdown: ${err?.message || 'Unknown error occurred'}`, 'error');
     } finally {
-      try {
-        await Promise.all([
-          RedisInfrastructure.disconnect(),
-          RabbitMQInfrastructure.disconnect(),
-          DbConnectionInfrastructure.disconnect()
-        ]);
-
-        LoggerHelper.log('External services disconnected successfully', 'info');
-      } catch (err: any) {
-        LoggerHelper.log(`Error disconnecting external services: ${err?.message || 'Unknown error occurred'}`, 'error');
-      }
-
-      await ClusterShutdownHelper.shutDownWorkers();
-
       process.exit(0);
     }
   }
 
   static async shutDownWorkers (): Promise<void> {
-    if (cluster.isPrimary) {
-      LoggerHelper.log(`Master process shutting down workers. PID: ${process.pid}`, 'info');
+    const workers = Object.values(cluster.workers || {});
 
-      const workers = Object.values(cluster.workers || {});
-      await Promise.all(workers.map(async (worker) => worker?.kill('SIGINT')));
-
-      LoggerHelper.log('All worker processes shut down', 'info');
+    for (const worker of workers) {
+      worker?.kill('SIGINT');
     }
+  }
+
+  private static async disconnectServices (): Promise<void> {
+    await Promise.allSettled([
+      RedisInfrastructure.disconnect(),
+      RabbitMQInfrastructure.disconnect(),
+      DbConnectionInfrastructure.disconnect()
+    ]);
   }
 }

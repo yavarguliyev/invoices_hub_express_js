@@ -1,7 +1,7 @@
-import { Middleware, ExpressErrorMiddlewareInterface } from 'routing-controllers';
+import { Middleware, ExpressErrorMiddlewareInterface, HttpError } from 'routing-controllers';
 import { Request, Response } from 'express';
 
-import { BaseError, DbError, NotFoundError, BadRequestError } from 'errors';
+import { BaseError, DbError, NotFoundError, BadRequestError, ValidationError } from 'errors';
 
 @Middleware({ type: 'after' })
 export class ErrorHandlerMiddleware implements ExpressErrorMiddlewareInterface {
@@ -10,28 +10,48 @@ export class ErrorHandlerMiddleware implements ExpressErrorMiddlewareInterface {
     let errorMessage = error.message || 'An unexpected error occurred.';
     let errorDetails = error.details || null;
 
+    const validationErrors: { property: string; constraints: any; value: any }[] = [];
+
+    if (error.errors) {
+      error.errors.forEach((e: any) => {
+        validationErrors.push({
+          property: e.property,
+          constraints: e.constraints,
+          value: e.value
+        });
+      });
+    }
+
     if (error instanceof DbError) {
       statusCode = error.httpCode;
       errorMessage = 'Database operation failed';
       errorDetails = { failedOperation: error.operationName, args: error.args };
-    }
-
-    if (error instanceof NotFoundError) {
+    } else if (error instanceof NotFoundError) {
       statusCode = error.httpCode;
       errorMessage = error.message || 'Resource not found';
-    }
-
-    if (error instanceof BadRequestError) {
+    } else if (error instanceof HttpError) {
+      statusCode = error.httpCode;
+      errorMessage = error.message || 'HTTP error occurred';
+    } else if (error instanceof ValidationError) {
+      statusCode = error.httpCode;
+      errorMessage = error.message || 'Validation error occurred';
+    } else if (error instanceof BadRequestError) {
       statusCode = error.httpCode;
       errorMessage = error.message || 'Bad request';
-    }
-
-    if (error instanceof BaseError) {
+    } else if (error instanceof BaseError) {
       statusCode = error.httpCode;
       errorMessage = error.message;
       errorDetails = error.details;
     }
 
-    response.status(statusCode).json({ status: 'error', message: errorMessage, details: errorDetails });
+    if (validationErrors.length > 0) {
+      errorDetails = validationErrors;
+    }
+
+    response.status(statusCode).json({
+      status: 'error',
+      message: errorMessage,
+      details: errorDetails
+    });
   }
 }

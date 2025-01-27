@@ -1,6 +1,5 @@
 import { connect, Channel, ConsumeMessage } from 'amqplib';
 
-import { LoggerHelper } from 'helpers/logger.helper';
 import { safelyInitializeService, getEnvVariable, ensureInitialized } from 'helpers/utility-functions.helper';
 import { Variables } from 'value-objects/enums/variables.enum';
 
@@ -42,7 +41,6 @@ export default class RabbitMQInfrastructure {
 
     if (channel) {
       await channel.close();
-      LoggerHelper.log('RabbitMQ channel closed');
     }
 
     RabbitMQInfrastructure.channel = null;

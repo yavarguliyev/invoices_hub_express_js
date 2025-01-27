@@ -1,7 +1,6 @@
 import { IsEmail, IsString, Length } from 'class-validator';
 
 import { PasswordStrengthDecorator } from 'decorators/password-strength.decorator';
-import { Roles } from 'value-objects/enums/roles.enum';
 
 export class CreateUserArgs {
   @Length(8, 128)
@@ -21,5 +20,5 @@ export class CreateUserArgs {
   @PasswordStrengthDecorator()
   password: string;
 
-  role: Roles;
+  roleId: number;
 }

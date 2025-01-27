@@ -47,13 +47,11 @@ export default class RedisInfrastructure {
 
   static async disconnect (): Promise<void> {
     if (!RedisInfrastructure.client) {
-      LoggerHelper.log('Redis is already disconnected', 'info');
       return;
     }
 
     try {
       await RedisInfrastructure.client.disconnect();
-      LoggerHelper.log('Disconnected from Redis', 'info');
       RedisInfrastructure.client = null;
     } catch (err: any) {
       LoggerHelper.log(`Error during Redis shutdown: ${err?.message || 'An unknown error occurred'}`, 'error');

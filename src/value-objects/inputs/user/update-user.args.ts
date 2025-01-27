@@ -1,7 +1,5 @@
 import { IsEmail, IsOptional, IsString, Length } from 'class-validator';
 
-import { Roles } from 'value-objects/enums/roles.enum';
-
 export class UpdateUserArgs {
   @IsOptional()
   @Length(8, 128)
@@ -19,5 +17,5 @@ export class UpdateUserArgs {
   lastName?: string;
 
   @IsOptional()
-  role?: Roles;
+  roleId?: number;
 }

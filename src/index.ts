@@ -36,22 +36,27 @@ const main = async (): Promise<void> => {
 
     const app = await Container.get(ExpressServerInfrastructure).get();
     const httpServer = http.createServer(app);
-    const port = process.env.PORT || 3000;
+    const port = parseInt(process.env.PORT || '3000');
 
     if (!cluster.isPrimary) {
       httpServer.listen(port, () => LoggerHelper.log(`Server running in ${process.env.NODE_ENV} mode on port ${port}`, 'info'));
-      httpServer.timeout = 600000;
+      httpServer.timeout = parseInt(process.env.SERVER_TIMEOUT!);
     }
 
     handleProcessSignals(ClusterShutdownHelper.shutDown.bind(ClusterShutdownHelper), httpServer);
   } catch (err: any) {
-    LoggerHelper.log(`Unhandled error in main: ${err?.message || 'An unknown error occurred'}`, 'error');
+    LoggerHelper.log(`Error during initialization: ${err?.message || 'Unknown error occurred'}`, 'error');
     process.exit(1);
   }
 };
 
-process.on('unhandledRejection', (err: Error) => {
-  LoggerHelper.log(`Unhandled rejection: ${err?.message || 'An unknown error occurred'}`, 'error');
+process.on('uncaughtException', () => {
+  LoggerHelper.log('Uncaught exception, exiting process', 'error');
+  process.exit(1);
+});
+
+process.on('unhandledRejection', () => {
+  LoggerHelper.log('Unhandled rejection, exiting process', 'error');
   process.exit(1);
 });
 

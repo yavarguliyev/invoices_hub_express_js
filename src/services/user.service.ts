@@ -68,7 +68,7 @@ export class UserService implements IUserService {
 
   @EventPublisherDecorator({ keyTemplate: REDIS_CACHE_KEYS.USER_GET_LIST, event: EVENTS.USER_CREATED })
   async create (userData: CreateUserArgs): Promise<UserResultsDto> {
-    const { email, role } = userData;
+    const { email, roleId } = userData;
 
     try {
       const existingUser = await this.userRepository.findOne({ where: { email } });
@@ -76,7 +76,7 @@ export class UserService implements IUserService {
         throw new BadRequestError('User already exists with the provided email.');
       }
 
-      const userRole = await this.roleRepository.findOne({ where: { name: role } });
+      const userRole = await this.roleRepository.findOne({ where: { id: roleId } });
       if (!userRole) {
         throw new NotFoundError('Role not found.');
       }
@@ -111,14 +111,14 @@ export class UserService implements IUserService {
         throw new NotFoundError(`User with ID ${id} not found.`);
       }
 
-      const { email, firstName, lastName, role } = userData;
+      const { email, firstName, lastName, roleId } = userData;
 
       if (email) userToBeUpdated.email = email;
       if (firstName) userToBeUpdated.firstName = firstName;
       if (lastName) userToBeUpdated.lastName = lastName;
 
-      if (role) {
-        const userRole = await this.roleRepository.findOne({ where: { name: role } });
+      if (roleId) {
+        const userRole = await this.roleRepository.findOne({ where: { id: roleId } });
         if (!userRole) {
           throw new NotFoundError('Role not found.');
         }

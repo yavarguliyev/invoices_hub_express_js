@@ -1,5 +1,6 @@
 import { Constructable } from 'typedi';
 import crypto from 'crypto';
+import winston from 'winston';
 
 import { LoggerHelper } from 'helpers/logger.helper';
 import { ContainerHelper } from 'ioc/helpers/container.helper';
@@ -55,3 +56,12 @@ export const generateCacheKey = (keyTemplate: string): RedisCacheKeys => {
 
   return { cacheKey, ttl };
 };
+
+export const winstonLogger = winston.createLogger({
+  level: 'info',
+  format: winston.format.combine(
+    winston.format.timestamp(),
+    winston.format.printf(({ timestamp, level, message }) => `[${timestamp}] [${level.toUpperCase()}] ${message}`)
+  ),
+  transports: [new winston.transports.Console({ format: winston.format.combine(winston.format.colorize(), winston.format.simple()) })]
+});
