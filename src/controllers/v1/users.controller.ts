@@ -1,9 +1,9 @@
-import { JsonController, Get, Post, Put, Delete, Param, Params, Body } from 'routing-controllers';
+import { JsonController, Get, Post, Put, Delete, Param, Params, Body, HttpCode } from 'routing-controllers';
 
 import { BaseController } from 'controllers/base.controller';
 import { ContainerHelper } from 'ioc/helpers/container.helper';
 import { ContainerItems } from 'ioc/static/container-items';
-import { IUserService } from 'services/user.service.dto';
+import { IUserService } from 'services/user.service';
 import { GetUserArgs } from 'value-objects/inputs/user/get-user.args';
 import { CreateUserArgs } from 'value-objects/inputs/user/create-user.args';
 import { UpdateUserArgs } from 'value-objects/inputs/user/update-user.args';
@@ -28,6 +28,7 @@ export class UsersController extends BaseController {
     return await this.userService.getBy(args);
   }
 
+  @HttpCode(201)
   @Post('/')
   async create (@Body() args: CreateUserArgs) {
     return await this.userService.create(args);

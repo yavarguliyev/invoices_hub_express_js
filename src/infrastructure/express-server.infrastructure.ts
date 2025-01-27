@@ -26,13 +26,9 @@ export class ExpressServerInfrastructure implements IExpressServerInfrastructure
     return createExpressServer({
       // cors: { origin: '*' },
       routePrefix: '/api/v1',
-      controllers: [
-        HealthcheckController,
-        UsersController
-      ],
-      middlewares: [
-        ErrorHandlerMiddleware
-      ],
+      controllers: [HealthcheckController, UsersController],
+      middlewares: [ErrorHandlerMiddleware],
+      classTransformer: false,
       defaultErrorHandler: false
     });
   }

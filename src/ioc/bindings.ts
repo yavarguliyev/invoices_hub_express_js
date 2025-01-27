@@ -4,7 +4,7 @@ import { useContainer as routingControllersUseContainer } from 'routing-controll
 
 import { ContainerHelper } from 'ioc/helpers/container.helper';
 import { ContainerItems } from 'ioc/static/container-items';
-import { UserService } from 'services/user.service.dto';
+import { UserService } from 'services/user.service';
 import { UsersController } from 'controllers/v1/users.controller';
 import { HealthcheckController } from 'controllers/v1/healthcheck.controller';
 import { ExpressServerInfrastructure } from 'infrastructure/express-server.infrastructure';
