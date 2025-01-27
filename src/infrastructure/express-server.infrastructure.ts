@@ -24,7 +24,6 @@ export class ExpressServerInfrastructure implements IExpressServerInfrastructure
 
   private createServer (): Express {
     return createExpressServer({
-      // cors: { origin: '*' },
       routePrefix: '/api/v1',
       controllers: [HealthcheckController, UsersController],
       middlewares: [ErrorHandlerMiddleware],

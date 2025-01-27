@@ -1,7 +1,7 @@
 import http from 'http';
 import cluster from 'cluster';
 
-import { LoggerHelper } from 'helpers/logger.helper';
+import { LoggerTracerInfrastructure } from 'infrastructure/logger-tracer.infrastructure';
 import RedisInfrastructure from 'infrastructure/redis.infrastructure';
 import RabbitMQInfrastructure from 'infrastructure/rabbitmq.infrastructure';
 import { DbConnectionInfrastructure } from 'infrastructure/db-connection.infrastructure';
@@ -19,7 +19,7 @@ export class ClusterShutdownHelper {
         await this.shutDownWorkers();
       }
     } catch (err: any) {
-      LoggerHelper.log(`Error during shutdown: ${err?.message || 'Unknown error occurred'}`, 'error');
+      LoggerTracerInfrastructure.log(`Error during shutdown: ${err?.message || 'Unknown error occurred'}`, 'error');
     } finally {
       process.exit(0);
     }

@@ -1,7 +1,7 @@
 import cluster from 'cluster';
 import os from 'os';
 
-import { LoggerHelper } from 'helpers/logger.helper';
+import { LoggerTracerInfrastructure } from 'infrastructure/logger-tracer.infrastructure';
 import { ClusterShutdownHelper } from 'helpers/cluster-shutdown.helper';
 import { handleProcessSignals } from 'helpers/utility-functions.helper';
 
@@ -27,7 +27,7 @@ export class ClusterInfrastructure {
 
         handleProcessSignals(ClusterShutdownHelper.shutDownWorkers);
       } else {
-        LoggerHelper.log(`Worker process running: ${process.pid}`, 'info');
+        LoggerTracerInfrastructure.log(`Worker process running: ${process.pid}`, 'info');
       }
     } catch (err: any) {
       process.exit(1);

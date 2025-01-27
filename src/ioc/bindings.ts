@@ -15,7 +15,7 @@ import User from 'entities/user.entity';
 import Role from 'entities/role.entity';
 import { UserRepository } from 'repositories/user.repository';
 import { RoleRepository } from 'repositories/role.repository';
-import { LoggerHelper } from 'helpers/logger.helper';
+import { LoggerTracerInfrastructure } from 'infrastructure/logger-tracer.infrastructure';
 
 export function configureContainers () {
   typeormUseContainer(Container);
@@ -35,7 +35,7 @@ export async function configureRepositories () {
       Container.set(RoleRepository, roleRepository);
     }
   } catch (error) {
-    LoggerHelper.log(`Error initializing data source: ${error}`, 'error');
+    LoggerTracerInfrastructure.log(`Error initializing data source: ${error}`, 'error');
   }
 };
 

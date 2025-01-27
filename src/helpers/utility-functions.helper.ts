@@ -2,16 +2,16 @@ import { Constructable } from 'typedi';
 import crypto from 'crypto';
 import winston from 'winston';
 
-import { LoggerHelper } from 'helpers/logger.helper';
+import { LoggerTracerInfrastructure } from 'infrastructure/logger-tracer.infrastructure';
 import { ContainerHelper } from 'ioc/helpers/container.helper';
 import { RedisCacheKeys } from 'value-objects/types/redis/redis-decorator.types';
 
 export const safelyInitializeService = async (serviceName: string, initializeFn: () => Promise<void>): Promise<void> => {
   try {
     await initializeFn();
-    LoggerHelper.log(`${serviceName} initialized successfully`, 'info');
+    LoggerTracerInfrastructure.log(`${serviceName} initialized successfully`, 'info');
   } catch (err: any) {
-    LoggerHelper.log(`${serviceName} initialization failed: ${err?.message || 'An unknown error occurred'}`, 'error');
+    LoggerTracerInfrastructure.log(`${serviceName} initialization failed: ${err?.message || 'An unknown error occurred'}`, 'error');
     throw err;
   }
 };
@@ -38,7 +38,7 @@ export const handleProcessSignals = (shutdownCallback: (...args: any[]) => Promi
 };
 
 export const logWorkerStatus = (message: string, pid: number): void => {
-  LoggerHelper.log(`${message}: ${pid}`, 'info');
+  LoggerTracerInfrastructure.log(`${message}: ${pid}`, 'info');
 };
 
 export const registerService = <T> (id: string, service: Constructable<T>, isSingleton: boolean = true): void => {

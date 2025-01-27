@@ -1,6 +1,6 @@
 import { createClient, RedisClientType } from 'redis';
 
-import { LoggerHelper } from 'helpers/logger.helper';
+import { LoggerTracerInfrastructure } from 'infrastructure/logger-tracer.infrastructure';
 import { safelyInitializeService, getEnvVariable, ensureInitialized } from 'helpers/utility-functions.helper';
 import { Variables } from 'value-objects/enums/variables.enum';
 
@@ -54,7 +54,7 @@ export default class RedisInfrastructure {
       await RedisInfrastructure.client.disconnect();
       RedisInfrastructure.client = null;
     } catch (err: any) {
-      LoggerHelper.log(`Error during Redis shutdown: ${err?.message || 'An unknown error occurred'}`, 'error');
+      LoggerTracerInfrastructure.log(`Error during Redis shutdown: ${err?.message || 'An unknown error occurred'}`, 'error');
     }
   }
 
