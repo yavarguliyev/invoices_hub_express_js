@@ -22,7 +22,7 @@ export class HealthcheckController {
       healthcheckStatus.rabbitMQ = rabbitMQ ? 'healthy' : 'unhealthy';
 
       return healthcheckStatus;
-    } catch (error: any) {
+    } catch (error) {
       throw new DatabaseConnectionError({ operation: 'healthcheck', error });
     }
   }

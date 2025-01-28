@@ -5,7 +5,7 @@ import { safelyInitializeService, getEnvVariable, ensureInitialized } from 'help
 import { Variables } from 'value-objects/enums/variables.enum';
 
 export default class RedisInfrastructure {
-  private static client: RedisClientType | null = null;
+  private static client: RedisClientType | undefined = undefined;
 
   static async initialize (): Promise<void> {
     await safelyInitializeService(Variables.REDIS, async () => {
@@ -22,27 +22,27 @@ export default class RedisInfrastructure {
     });
   }
 
-  static async get<T = string> (key: string): Promise<T | null> {
+  static async get<T = string> (key: string): Promise<T | undefined> {
     const client = ensureInitialized(RedisInfrastructure.client, Variables.REDIS_SERVICE);
-    const value = await client.get(key);
+    const value = await client?.get(key);
 
-    return value ? (JSON.parse(value) as T) : null;
+    return value ? (JSON.parse(value) as T) : undefined;
   }
 
   static async set (key: string, value: string, ttl?: number): Promise<void> {
     const client = ensureInitialized(RedisInfrastructure.client, Variables.REDIS_SERVICE);
 
     if (ttl) {
-      await client.setEx(key, ttl, value);
+      await client?.setEx(key, ttl, value);
     } else {
-      await client.set(key, value);
+      await client?.set(key, value);
     }
   }
 
   static async delete (key: string): Promise<void> {
     const client = ensureInitialized(RedisInfrastructure.client, Variables.REDIS_SERVICE);
 
-    await client.del(key);
+    await client?.del(key);
   }
 
   static async disconnect (): Promise<void> {
@@ -52,7 +52,7 @@ export default class RedisInfrastructure {
 
     try {
       await RedisInfrastructure.client.disconnect();
-      RedisInfrastructure.client = null;
+      delete RedisInfrastructure?.client;
     } catch (err: any) {
       LoggerTracerInfrastructure.log(`Error during Redis shutdown: ${err?.message || 'An unknown error occurred'}`, 'error');
     }
@@ -62,13 +62,13 @@ export default class RedisInfrastructure {
     return RedisInfrastructure.client ? RedisInfrastructure.client.isOpen : false;
   }
 
-  static async mget (keys: string[]): Promise<Record<string, string | null>> {
+  static async mget (keys: string[]): Promise<Record<string, string | undefined>> {
     const client = ensureInitialized(RedisInfrastructure.client, Variables.REDIS_SERVICE);
     const values = await client.mGet(keys);
 
     return keys.reduce((acc, key, i) => {
-      acc[key] = values[i] || null;
+      acc[key] = values[i] || undefined;
       return acc;
-    }, {} as Record<string, string | null>);
+    }, {} as Record<string, string | undefined>);
   }
 }

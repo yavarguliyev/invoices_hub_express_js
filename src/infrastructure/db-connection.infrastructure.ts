@@ -5,7 +5,7 @@ import User from 'entities/user.entity';
 import Role from 'entities/role.entity';
 
 export class DbConnectionInfrastructure {
-  private static dataSource: DataSource | null = null;
+  private static dataSource?: DataSource;
 
   static create (): DataSource {
     if (!this.dataSource) {
@@ -28,13 +28,13 @@ export class DbConnectionInfrastructure {
   }
 
   static async disconnect (): Promise<void> {
-    if (this.dataSource && this.dataSource.isInitialized) {
+    if (this.dataSource?.isInitialized) {
       await this.dataSource.destroy();
-      this.dataSource = null;
+      delete this.dataSource;
     }
   }
 
   static isConnected (): boolean {
-    return this.dataSource !== null && this.dataSource.isInitialized;
+    return !!this.dataSource?.isInitialized;
   }
 }

@@ -17,7 +17,7 @@ export const safelyInitializeService = async (serviceName: string, initializeFn:
   }
 };
 
-export const ensureInitialized = <T> (connection: T | null, serviceName: string): T => {
+export const ensureInitialized = <T> (connection: T | undefined, serviceName: string): T => {
   if (!connection) {
     throw new Error(`${serviceName} is not initialized. Call initialize() first.`);
   }
