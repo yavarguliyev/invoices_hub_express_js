@@ -18,6 +18,12 @@ import { RoleRepository } from 'repositories/role.repository';
 import { LoggerTracerInfrastructure } from 'infrastructure/logger-tracer.infrastructure';
 import { InvoicesController } from 'controllers/v1/invoices.controller';
 import { AuthController } from 'controllers/v1/auth.controller';
+import { AuthService } from 'services/auth.service';
+import { RoleService } from 'services/role.service';
+import Invoice from 'entities/invoices.entity';
+import { InvoiceRepository } from 'repositories/invoice.repository';
+import { RolesController } from 'controllers/v1/roles.controller';
+import { InvoiceService } from 'services/invoice.service';
 
 export function configureContainers () {
   typeormUseContainer(Container);
@@ -30,11 +36,13 @@ export async function configureRepositories () {
     await dataSource.initialize();
 
     if (dataSource.isInitialized) {
-      const userRepository = dataSource.getRepository(User);
+      const invoiceRepository = dataSource.getRepository(Invoice);
       const roleRepository = dataSource.getRepository(Role);
+      const userRepository = dataSource.getRepository(User);
 
-      Container.set(UserRepository, userRepository);
+      Container.set(InvoiceRepository, invoiceRepository);
       Container.set(RoleRepository, roleRepository);
+      Container.set(UserRepository, userRepository);
     }
   } catch (error) {
     LoggerTracerInfrastructure.log(`Error initializing data source: ${error}`, 'error');
@@ -50,11 +58,15 @@ export function configureMiddlewares () {
 };
 
 export function configureControllersAndServices () {
+  registerService(ContainerItems.IAuthService, AuthService);
+  registerService(ContainerItems.IInvoiceService, InvoiceService);
+  registerService(ContainerItems.IRoleService, RoleService);
   registerService(ContainerItems.IUserService, UserService);
 
   ContainerHelper
     .registerController(AuthController)
     .registerController(HealthcheckController)
     .registerController(InvoicesController)
+    .registerController(RolesController)
     .registerController(UsersController);
 };

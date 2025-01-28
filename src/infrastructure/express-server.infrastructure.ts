@@ -8,6 +8,7 @@ import { UsersController } from 'controllers/v1/users.controller';
 import { ErrorHandlerMiddleware } from 'middlewares/error-handler.middleware';
 import { AuthController } from 'controllers/v1/auth.controller';
 import { InvoicesController } from 'controllers/v1/invoices.controller';
+import { RolesController } from 'controllers/v1/roles.controller';
 
 export interface IExpressServerInfrastructure {
   get(): Promise<Express>;
@@ -27,7 +28,7 @@ export class ExpressServerInfrastructure implements IExpressServerInfrastructure
   }
 
   private createServer (): Express {
-    const controllers = [AuthController, HealthcheckController, InvoicesController, UsersController];
+    const controllers = [AuthController, HealthcheckController, InvoicesController, RolesController, UsersController];
 
     const app = createExpressServer({
       controllers,

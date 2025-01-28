@@ -1,4 +1,4 @@
-import { Entity, Column, ManyToOne, Index, BeforeInsert, BeforeRemove, JoinColumn, getManager } from 'typeorm';
+import { Entity, Column, ManyToOne, Index, BeforeInsert, BeforeRemove, JoinColumn, getManager, OneToMany } from 'typeorm';
 import { IsEmail, IsString, Length } from 'class-validator';
 import bcrypt from 'bcrypt';
 
@@ -6,6 +6,7 @@ import BaseEntity from 'entities/base.entity';
 import Role from 'entities/role.entity';
 import { Entities } from 'value-objects/enums/entities.enum';
 import { PasswordStrengthDecorator } from 'decorators/password-strength.decorator';
+import Invoice from 'entities/invoices.entity';
 
 @Entity(Entities.USER)
 export default class User extends BaseEntity {
@@ -39,11 +40,12 @@ export default class User extends BaseEntity {
   @BeforeRemove()
   async handleSoftDelete () {
     if (this.deletedAt) {
-      await getManager().query(`
-        DELETE FROM unique_constraint_table WHERE email = ?;
-      `, [this.email]);
+      await getManager().query('DELETE FROM unique_constraint_table WHERE email = ?;', [this.email]);
     }
   }
+
+  @OneToMany(() => Invoice, (invoice) => invoice.user)
+  public invoices: Invoice[];
 
   @ManyToOne(() => Role, (role) => role.users, { lazy: true })
   @JoinColumn({ name: 'role_id' })

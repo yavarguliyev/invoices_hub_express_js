@@ -1,4 +1,4 @@
-export enum UserResultMessage {
+export enum ResultMessage {
   SUCCEED = 'SUCCEED',
   USER_EXISTS = 'USER_ALREADY_EXISTS',
   NOT_FOUND = 'USER_NOT_FOUND',

@@ -1,7 +1,7 @@
 import { PrimaryGeneratedColumn, CreateDateColumn, DeleteDateColumn, UpdateDateColumn } from 'typeorm';
 
 export default abstract class BaseEntity {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn('increment')
   readonly id: number;
 
   @CreateDateColumn({ readonly: true, type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP', name: 'created_at' })

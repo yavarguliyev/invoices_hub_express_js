@@ -12,7 +12,7 @@ import { CreateUserArgs } from 'value-objects/inputs/user/create-user.args';
 import { UpdateUserArgs } from 'value-objects/inputs/user/update-user.args';
 import { DeleteUserArgs } from 'value-objects/inputs/user/delete-user.args';
 import { UserResultsDto } from 'value-objects/dto/user/user-results.dto';
-import { UserResultMessage } from 'value-objects/enums/user-result-message.enum';
+import { ResultMessage } from 'value-objects/enums/result-message.enum';
 import { UserDto } from 'value-objects/dto/user/user.dto';
 import { NotFoundError, BadRequestError } from 'errors';
 
@@ -38,7 +38,7 @@ export class UserService implements IUserService {
     const users = await this.userRepository.find();
     const userDtos = users.map((user) => plainToInstance(UserDto, user, { excludeExtraneousValues: true }));
 
-    return { users: userDtos, result: UserResultMessage.SUCCEED };
+    return { users: userDtos, result: ResultMessage.SUCCEED };
   }
 
   async getBy ({ id }: GetUserArgs): Promise<UserResultsDto> {
@@ -49,7 +49,7 @@ export class UserService implements IUserService {
 
     const userDto = plainToInstance(UserDto, user, { excludeExtraneousValues: true });
 
-    return { user: userDto, result: UserResultMessage.SUCCEED };
+    return { user: userDto, result: ResultMessage.SUCCEED };
   }
 
   @EventPublisherDecorator({ keyTemplate: REDIS_CACHE_KEYS.USER_GET_LIST, event: EVENTS.USER_CREATED })
@@ -70,7 +70,7 @@ export class UserService implements IUserService {
     const newUser = await this.userRepository.save(user);
     const userDto = plainToInstance(UserDto, newUser, { excludeExtraneousValues: true });
 
-    return { user: userDto, result: UserResultMessage.SUCCEED };
+    return { user: userDto, result: ResultMessage.SUCCEED };
   }
 
   @EventPublisherDecorator({ keyTemplate: REDIS_CACHE_KEYS.USER_GET_LIST, event: EVENTS.USER_UPDATED })
@@ -91,7 +91,7 @@ export class UserService implements IUserService {
     const updatedUser = await this.userRepository.save(userToBeUpdated);
     const userDto = plainToInstance(UserDto, updatedUser, { excludeExtraneousValues: true });
 
-    return { user: userDto, result: UserResultMessage.SUCCEED };
+    return { user: userDto, result: ResultMessage.SUCCEED };
   }
 
   @EventPublisherDecorator({ keyTemplate: REDIS_CACHE_KEYS.USER_GET_LIST, event: EVENTS.USER_DELETED })
@@ -102,6 +102,6 @@ export class UserService implements IUserService {
     }
 
     await this.userRepository.softDelete(id);
-    return { result: UserResultMessage.SUCCEED };
+    return { result: ResultMessage.SUCCEED };
   }
 }
