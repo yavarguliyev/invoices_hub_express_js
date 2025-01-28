@@ -5,6 +5,7 @@ import winston from 'winston';
 import { LoggerTracerInfrastructure } from 'infrastructure/logger-tracer.infrastructure';
 import { ContainerHelper } from 'ioc/helpers/container.helper';
 import { RedisCacheKeys } from 'value-objects/types/redis/redis-decorator.types';
+import { Version } from 'value-objects/types/controllers/version-control.type';
 
 export const safelyInitializeService = async (serviceName: string, initializeFn: () => Promise<void>): Promise<void> => {
   try {
@@ -55,6 +56,10 @@ export const generateCacheKey = (keyTemplate: string): RedisCacheKeys => {
   const cacheKey = `${keyTemplate}:${funcHash}:${keyTemplate}`;
 
   return { cacheKey, ttl };
+};
+
+export const createVersionedRoute = (controllerPath: string, version: Version) => {
+  return `/api/${version}${controllerPath}`;
 };
 
 export const winstonLogger = winston.createLogger({

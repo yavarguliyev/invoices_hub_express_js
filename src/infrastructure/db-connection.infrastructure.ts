@@ -33,4 +33,8 @@ export class DbConnectionInfrastructure {
       this.dataSource = null;
     }
   }
+
+  static isConnected (): boolean {
+    return this.dataSource !== null && this.dataSource.isInitialized;
+  }
 }

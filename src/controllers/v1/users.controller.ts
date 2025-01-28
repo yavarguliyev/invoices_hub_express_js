@@ -1,6 +1,5 @@
 import { JsonController, Get, Post, Put, Delete, Param, Params, Body, HttpCode } from 'routing-controllers';
 
-import { BaseController } from 'controllers/base.controller';
 import { ContainerHelper } from 'ioc/helpers/container.helper';
 import { ContainerItems } from 'ioc/static/container-items';
 import { IUserService } from 'services/user.service';
@@ -8,13 +7,13 @@ import { GetUserArgs } from 'value-objects/inputs/user/get-user.args';
 import { CreateUserArgs } from 'value-objects/inputs/user/create-user.args';
 import { UpdateUserArgs } from 'value-objects/inputs/user/update-user.args';
 import { DeleteUserArgs } from 'value-objects/inputs/user/delete-user.args';
+import { createVersionedRoute } from 'helpers/utility-functions.helper';
 
-@JsonController('/users')
-export class UsersController extends BaseController {
+@JsonController(createVersionedRoute('/users', 'v1'))
+export class UsersController {
   private userService: IUserService;
 
   constructor () {
-    super();
     this.userService = ContainerHelper.get<IUserService>(ContainerItems.IUserService);
   }
 

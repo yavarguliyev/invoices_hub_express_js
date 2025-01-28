@@ -1,14 +1,16 @@
-import { connect, Channel, ConsumeMessage } from 'amqplib';
+import { connect, Channel, Connection, ConsumeMessage } from 'amqplib';
 
 import { safelyInitializeService, getEnvVariable, ensureInitialized } from 'helpers/utility-functions.helper';
 import { Variables } from 'value-objects/enums/variables.enum';
 
 export default class RabbitMQInfrastructure {
   private static channel: Channel | null = null;
+  private static connection: Connection | null = null;
 
   static async initialize (): Promise<void> {
     await safelyInitializeService(Variables.RABBIT_MQ, async () => {
       const connection = await connect(getEnvVariable(Variables.RABBITMQ_URL));
+      RabbitMQInfrastructure.connection = connection;
       RabbitMQInfrastructure.channel = await connection.createChannel();
     });
   }
@@ -38,11 +40,21 @@ export default class RabbitMQInfrastructure {
 
   static async disconnect (): Promise<void> {
     const channel = RabbitMQInfrastructure.channel;
+    const connection = RabbitMQInfrastructure.connection;
 
     if (channel) {
       await channel.close();
     }
 
+    if (connection) {
+      await connection.close();
+    }
+
     RabbitMQInfrastructure.channel = null;
+    RabbitMQInfrastructure.connection = null;
+  }
+
+  static isConnected (): boolean {
+    return RabbitMQInfrastructure.channel !== null && RabbitMQInfrastructure.connection !== null;
   }
 }

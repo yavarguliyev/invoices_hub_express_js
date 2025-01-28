@@ -1,25 +1,29 @@
-import { JsonController, Get, HttpError } from 'routing-controllers';
+import { JsonController, Get } from 'routing-controllers';
 
-import { BaseController } from 'controllers/base.controller';
 import RedisInfrastructure from 'infrastructure/redis.infrastructure';
+import RabbitMQInfrastructure from 'infrastructure/rabbitmq.infrastructure';
+import { DbConnectionInfrastructure } from 'infrastructure/db-connection.infrastructure';
+import { DatabaseConnectionError } from 'errors';
+import { createVersionedRoute } from 'helpers/utility-functions.helper';
 
-@JsonController('/healthcheck')
-export class HealthcheckController extends BaseController {
-  constructor () {
-    super();
-  }
-
+@JsonController(createVersionedRoute('/healthcheck', 'v1'))
+export class HealthcheckController {
   @Get('/')
   async healthcheck () {
-    const healthcheckStatus = { message: 'OK', uptime: process.uptime(), timestamp: Date.now(), redis: '' };
+    const healthcheckStatus = { message: 'OK', uptime: process.uptime(), timestamp: Date.now(), redis: 'unhealthy', rabbitMQ: 'unhealthy', db: 'unhealthy' };
 
     try {
-      const isConnected = await RedisInfrastructure.isConnected();
-      healthcheckStatus.redis = isConnected ? 'healthy' : 'unhealthy';
+      const db = DbConnectionInfrastructure.isConnected();
+      const redis = await RedisInfrastructure.isConnected();
+      const rabbitMQ = RabbitMQInfrastructure.isConnected();
+
+      healthcheckStatus.db = db ? 'healthy' : 'unhealthy';
+      healthcheckStatus.redis = redis ? 'healthy' : 'unhealthy';
+      healthcheckStatus.rabbitMQ = rabbitMQ ? 'healthy' : 'unhealthy';
 
       return healthcheckStatus;
-    } catch (err: any) {
-      throw new HttpError(503, err?.message || 'An unknown error occurred');
+    } catch (error: any) {
+      throw new DatabaseConnectionError({ operation: 'healthcheck', error });
     }
   }
 }

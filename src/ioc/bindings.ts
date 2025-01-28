@@ -16,6 +16,8 @@ import Role from 'entities/role.entity';
 import { UserRepository } from 'repositories/user.repository';
 import { RoleRepository } from 'repositories/role.repository';
 import { LoggerTracerInfrastructure } from 'infrastructure/logger-tracer.infrastructure';
+import { InvoicesController } from 'controllers/v1/invoices.controller';
+import { AuthController } from 'controllers/v1/auth.controller';
 
 export function configureContainers () {
   typeormUseContainer(Container);
@@ -51,6 +53,8 @@ export function configureControllersAndServices () {
   registerService(ContainerItems.IUserService, UserService);
 
   ContainerHelper
+    .registerController(AuthController)
     .registerController(HealthcheckController)
+    .registerController(InvoicesController)
     .registerController(UsersController);
 };
