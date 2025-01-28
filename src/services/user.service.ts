@@ -1,7 +1,6 @@
 import { Container } from 'typedi';
 import { plainToInstance } from 'class-transformer';
-import { EntityNotFoundError, QueryFailedError } from 'typeorm';
-import { HttpError } from 'routing-controllers';
+import { EntityNotFoundError } from 'typeorm';
 
 import { EVENTS } from 'value-objects/enums/events.enum';
 import { REDIS_CACHE_KEYS } from 'value-objects/types/redis/redis-decorator.types';
@@ -16,14 +15,14 @@ import { DeleteUserArgs } from 'value-objects/inputs/user/delete-user.args';
 import { UserResultsDto } from 'value-objects/dto/user/user-results.dto';
 import { UserResultMessage } from 'value-objects/enums/user-result-message.enum';
 import { UserDto } from 'value-objects/dto/user/user.dto';
-import { NotFoundError, BadRequestError, DbError } from 'errors';
+import { NotFoundError, BadRequestError, DatabaseConnectionError } from 'errors';
 
 export interface IUserService {
-  get (): Promise<UserResultsDto>;
-  getBy (userData: GetUserArgs): Promise<UserResultsDto>;
-  create (userData: CreateUserArgs): Promise<UserResultsDto>;
-  update (id: number, userData: UpdateUserArgs): Promise<UserResultsDto>;
-  delete (userData: DeleteUserArgs): Promise<UserResultsDto>;
+  get(): Promise<UserResultsDto>;
+  getBy(userData: GetUserArgs): Promise<UserResultsDto>;
+  create(userData: CreateUserArgs): Promise<UserResultsDto>;
+  update(id: number, userData: UpdateUserArgs): Promise<UserResultsDto>;
+  delete(userData: DeleteUserArgs): Promise<UserResultsDto>;
 }
 
 export class UserService implements IUserService {
@@ -42,8 +41,8 @@ export class UserService implements IUserService {
       const userDtos = users.map((user) => plainToInstance(UserDto, user, { excludeExtraneousValues: true }));
 
       return { users: userDtos, result: UserResultMessage.SUCCEED };
-    } catch {
-      throw new DbError('find', []);
+    } catch (error) {
+      throw new DatabaseConnectionError({ operation: 'find', error });
     }
   }
 
@@ -53,16 +52,12 @@ export class UserService implements IUserService {
       const userDto = plainToInstance(UserDto, user, { excludeExtraneousValues: true });
 
       return { user: userDto, result: UserResultMessage.SUCCEED };
-    } catch (error: unknown) {
+    } catch (error) {
       if (error instanceof EntityNotFoundError) {
-        throw new NotFoundError(`User with ID ${id} not found.`);
+        throw new NotFoundError(`User with ID ${id} not found.`, { id });
       }
 
-      if (error instanceof Error) {
-        throw new DbError('findOneByOrFail', [{ id }]);
-      }
-
-      throw new Error('An unexpected error occurred');
+      throw new DatabaseConnectionError({ operation: 'findOneByOrFail', error });
     }
   }
 
@@ -71,14 +66,14 @@ export class UserService implements IUserService {
     const { email, roleId } = userData;
 
     try {
-      const existingUser = await this.userRepository.findOne({ where: { email } });
+      const existingUser = await this.userRepository.findOne({ where: { email }, withDeleted: true });
       if (existingUser) {
-        throw new BadRequestError('User already exists with the provided email.');
+        throw new BadRequestError('User already exists with the provided email.', { email });
       }
 
       const userRole = await this.roleRepository.findOne({ where: { id: roleId } });
       if (!userRole) {
-        throw new NotFoundError('Role not found.');
+        throw new NotFoundError('Role not found.', { roleId });
       }
 
       const user = this.userRepository.create({ ...userData, role: userRole });
@@ -87,19 +82,11 @@ export class UserService implements IUserService {
 
       return { user: userDto, result: UserResultMessage.SUCCEED };
     } catch (error) {
-      if (error instanceof QueryFailedError && error.message.includes('duplicate key value violates unique constraint')) {
-        throw new BadRequestError('User already exists with the provided email.');
-      }
-
-      if (error instanceof BadRequestError || error instanceof NotFoundError || error instanceof HttpError) {
+      if (error instanceof BadRequestError) {
         throw error;
       }
 
-      if (error instanceof Error) {
-        throw new DbError('save', [{ ...userData }]);
-      }
-
-      throw new Error('An unexpected error occurred during user creation');
+      throw new DatabaseConnectionError({ operation: 'save', error });
     }
   }
 
@@ -108,59 +95,46 @@ export class UserService implements IUserService {
     try {
       const userToBeUpdated = await this.userRepository.findOneBy({ id });
       if (!userToBeUpdated) {
-        throw new NotFoundError(`User with ID ${id} not found.`);
+        throw new NotFoundError(`User with ID ${id} not found.`, { id });
       }
 
-      const { email, firstName, lastName, roleId } = userData;
-
-      if (email) userToBeUpdated.email = email;
-      if (firstName) userToBeUpdated.firstName = firstName;
-      if (lastName) userToBeUpdated.lastName = lastName;
-
-      if (roleId) {
-        const userRole = await this.roleRepository.findOne({ where: { id: roleId } });
-        if (!userRole) {
-          throw new NotFoundError('Role not found.');
+      if (userData?.email) {
+        const existingUser = await this.userRepository.findOne({ where: { email: userData?.email }, withDeleted: true });
+        if (existingUser) {
+          throw new BadRequestError('User already exists with the provided email.', { email: userData.email });
         }
-
-        userToBeUpdated.role = userRole;
       }
 
+      Object.assign(userToBeUpdated, userData);
       const updatedUser = await this.userRepository.save(userToBeUpdated);
       const userDto = plainToInstance(UserDto, updatedUser, { excludeExtraneousValues: true });
 
       return { user: userDto, result: UserResultMessage.SUCCEED };
     } catch (error) {
-      if (error instanceof QueryFailedError && error.message.includes('duplicate key value violates unique constraint')) {
-        throw new BadRequestError('User already exists with the provided email.');
-      }
-
-      if (error instanceof BadRequestError || error instanceof NotFoundError || error instanceof HttpError) {
+      if (error instanceof NotFoundError || error instanceof BadRequestError) {
         throw error;
       }
 
-      throw new DbError('save', [{ id, userData }]);
+      throw new DatabaseConnectionError({ operation: 'save', error });
     }
   }
 
   @EventPublisherDecorator({ keyTemplate: REDIS_CACHE_KEYS.USER_GET_LIST, event: EVENTS.USER_DELETED })
-  async delete (userData: DeleteUserArgs): Promise<UserResultsDto> {
-    const { id } = userData;
-
+  async delete ({ id }: DeleteUserArgs): Promise<UserResultsDto> {
     try {
       const existingUser = await this.userRepository.findOne({ where: { id } });
       if (!existingUser) {
-        throw new NotFoundError(`User with ID ${id} not found.`);
+        throw new NotFoundError(`User with ID ${id} not found.`, { id });
       }
 
       await this.userRepository.softDelete(id);
       return { result: UserResultMessage.SUCCEED };
     } catch (error) {
-      if (error instanceof BadRequestError || error instanceof NotFoundError || error instanceof HttpError) {
+      if (error instanceof NotFoundError) {
         throw error;
       }
 
-      throw new DbError('softDelete', [{ id }]);
+      throw new DatabaseConnectionError({ operation: 'softDelete', error });
     }
   }
 }

@@ -1,7 +1,18 @@
-import { BaseError } from 'errors';
+import { CustomError } from 'errors/custom-error';
 
-export class NotFoundError extends BaseError {
-  constructor (message: string = 'Resource not found') {
-    super(404, message);
+class NotFoundError extends CustomError {
+  statusCode = 404;
+  reason = 'Resource not found';
+
+  constructor (message: string, details?: Record<string, any>) {
+    super(message, details);
+
+    Object.setPrototypeOf(this, NotFoundError.prototype);
+  }
+
+  serializeErrors () {
+    return [{ message: this.message, reason: this.reason, details: this.details }];
   }
 }
+
+export { NotFoundError };
