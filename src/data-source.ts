@@ -1,6 +1,7 @@
 import { DataSource } from 'typeorm';
 
-import Invoice from 'entities/invoices.entity';
+import Invoice from 'entities/invoice.entity';
+import Oder from 'entities/order.entity';
 import Role from 'entities/role.entity';
 import User from 'entities/user.entity';
 
@@ -11,7 +12,7 @@ export const AppDataSource = new DataSource({
   username: process.env.DB_DEFAULT_USERNAME,
   password: process.env.DB_DEFAULT_PASSWORD,
   database: process.env.DB_DEFAULT_DATABASE,
-  entities: [Invoice, Role, User],
+  entities: [Invoice, Oder, Role, User],
   synchronize: false,
   logging: false,
   subscribers: [],

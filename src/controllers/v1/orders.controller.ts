@@ -1,22 +1,22 @@
 import { JsonController, Get, Authorized } from 'routing-controllers';
 
 import { createVersionedRoute } from 'helpers/utility-functions.helper';
-import { IRoleService } from 'services/role.service';
 import { ContainerHelper } from 'ioc/helpers/container.helper';
 import { ContainerItems } from 'ioc/static/container-items';
+import { IOrderService } from 'services/order.service';
 import { Roles } from 'value-objects/enums/roles.enum';
 
 @Authorized([Roles.GlobalAdmin, Roles.Admin])
-@JsonController(createVersionedRoute('/roles', 'v1'))
-export class RolesController {
-  private roleService: IRoleService;
+@JsonController(createVersionedRoute('/orders', 'v1'))
+export class OrdersController {
+  private orderService: IOrderService;
 
   constructor () {
-    this.roleService = ContainerHelper.get<IRoleService>(ContainerItems.IRoleService);
+    this.orderService = ContainerHelper.get<IOrderService>(ContainerItems.IOrderService);
   }
 
   @Get('/')
   async get () {
-    return await this.roleService.get();
+    return await this.orderService.get();
   }
 }

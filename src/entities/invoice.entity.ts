@@ -6,6 +6,7 @@ import User from 'entities/user.entity';
 import { Entities } from 'value-objects/enums/entities.enum';
 import { InvoiceStatus } from 'value-objects/enums/invoice-status.enum';
 import Role from 'entities/role.entity';
+import Order from 'entities/order.entity';
 
 @Entity(Entities.INVOICE)
 export default class Invoice extends BaseEntity {
@@ -34,4 +35,8 @@ export default class Invoice extends BaseEntity {
   @ManyToOne(() => User, (user) => user.invoices, { lazy: true })
   @JoinColumn({ name: 'user_id' })
   public user: User;
+
+  @ManyToOne(() => Order, (order) => order.invoices, { nullable: true })
+  @JoinColumn({ name: 'order_id' })
+  public order: Order;
 }

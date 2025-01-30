@@ -1,5 +1,4 @@
 import cluster from 'cluster';
-import os from 'os';
 
 import { LoggerTracerInfrastructure } from 'infrastructure/logger-tracer.infrastructure';
 import { ClusterShutdownHelper } from 'helpers/cluster-shutdown.helper';
@@ -17,7 +16,7 @@ export class ClusterInfrastructure {
 
     try {
       if (cluster.isPrimary) {
-        const numCPUs = os.cpus().length;
+        const numCPUs = Number(process.env.CLUSTER_WORKERS);
 
         for (let i = 0; i < numCPUs; i++) {
           cluster.fork();

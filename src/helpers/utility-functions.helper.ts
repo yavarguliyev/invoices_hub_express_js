@@ -4,7 +4,7 @@ import winston from 'winston';
 
 import { LoggerTracerInfrastructure } from 'infrastructure/logger-tracer.infrastructure';
 import { ContainerHelper } from 'ioc/helpers/container.helper';
-import { RedisCacheKeys } from 'value-objects/types/redis/redis-decorator.types';
+import { RedisCacheKeys, SortOrder } from 'value-objects/types/decorator/decorator.types';
 import { Version } from 'value-objects/types/controllers/version-control.type';
 
 export const safelyInitializeService = async (serviceName: string, initializeFn: () => Promise<void>): Promise<void> => {
@@ -56,6 +56,21 @@ export const generateCacheKey = (keyTemplate: string): RedisCacheKeys => {
   const cacheKey = `${keyTemplate}:${funcHash}:${keyTemplate}`;
 
   return { cacheKey, ttl };
+};
+
+export const compareValues = <T> (a: T, b: T, key: keyof T, sortOrder: SortOrder): number => {
+  const valA = a[key];
+  const valB = b[key];
+
+  if (typeof valA === 'string' && typeof valB === 'string') {
+    return sortOrder === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
+  } else if (typeof valA === 'number' && typeof valB === 'number') {
+    return sortOrder === 'asc' ? valA - valB : valB - valA;
+  } else if (valA instanceof Date && valB instanceof Date) {
+    return sortOrder === 'asc' ? valA.getTime() - valB.getTime() : valB.getTime() - valA.getTime();
+  } else {
+    return 0;
+  }
 };
 
 export const createVersionedRoute = (controllerPath: string, version: Version) => {

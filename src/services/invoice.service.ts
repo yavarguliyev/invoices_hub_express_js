@@ -3,13 +3,13 @@ import { plainToInstance } from 'class-transformer';
 
 import { InvoiceRepository } from 'repositories/invoice.repository';
 import { RedisDecorator } from 'decorators/redis.decorator';
-import { REDIS_CACHE_KEYS } from 'value-objects/types/redis/redis-decorator.types';
-import { InvoiceResultsDto } from 'value-objects/dto/invoice/invoice-results.dto';
+import { REDIS_CACHE_KEYS } from 'value-objects/types/decorator/decorator.types';
 import { InvoiceDto } from 'value-objects/dto/invoice/invoice.dto';
 import { ResultMessage } from 'value-objects/enums/result-message.enum';
+import { ResponseResults } from 'value-objects/types/services/response-results.type';
 
 export interface IInvoiceService {
-  get (): Promise<InvoiceResultsDto>;
+  get (): Promise<ResponseResults<InvoiceDto>>;
 }
 
 export class InvoiceService implements IInvoiceService {
@@ -19,17 +19,11 @@ export class InvoiceService implements IInvoiceService {
     this.invoiceRepository = Container.get(InvoiceRepository);
   }
 
-  @RedisDecorator({ keyTemplate: REDIS_CACHE_KEYS.INVOICE_GET_LIST })
-  async get (): Promise<InvoiceResultsDto> {
-    const invoices = await this.invoiceRepository
-      .createQueryBuilder('invoice')
-      .leftJoinAndSelect('invoice.approvedByRole', 'role')
-      .getMany();
+  @RedisDecorator<InvoiceDto>({ keyTemplate: REDIS_CACHE_KEYS.INVOICE_GET_LIST })
+  async get (): Promise<ResponseResults<InvoiceDto>> {
+    const invoices = await this.invoiceRepository.find();
+    const invoiceDtos = invoices.map((invoice) => plainToInstance(InvoiceDto, invoice, { excludeExtraneousValues: true }));
 
-    const invoiceDtos = invoices.map((invoice) =>
-      plainToInstance(InvoiceDto, invoice, { excludeExtraneousValues: true })
-    );
-
-    return { invoices: invoiceDtos, result: ResultMessage.SUCCEED };
+    return { payloads: invoiceDtos, result: ResultMessage.SUCCEED };
   }
 }

@@ -1,13 +1,13 @@
 import RedisInfrastructure from 'infrastructure/redis.infrastructure';
-import { RedisDecoratorOption } from 'value-objects/types/redis/redis-decorator.types';
-import { generateCacheKey } from 'helpers/utility-functions.helper';
+import { RedisDecoratorOption } from 'value-objects/types/decorator/decorator.types';
+import { compareValues, generateCacheKey } from 'helpers/utility-functions.helper';
 
-export function RedisDecorator (options: RedisDecoratorOption) {
+export function RedisDecorator<T> (options: RedisDecoratorOption<T>) {
   return function (_target: any, _propertyKey: string, descriptor: PropertyDescriptor) {
     const originalMethod = descriptor.value;
 
     descriptor.value = async function (...args: any[]) {
-      const { keyTemplate } = options;
+      const { keyTemplate, sortBy = 'id', sortOrder = 'desc' } = options;
       const { cacheKey, ttl } = generateCacheKey(keyTemplate);
 
       const cachedValue = await RedisInfrastructure.get(cacheKey);
@@ -16,6 +16,10 @@ export function RedisDecorator (options: RedisDecoratorOption) {
       }
 
       const result = await originalMethod.apply(this, args);
+      if (sortBy && Array.isArray(result.payloads)) {
+        result.payloads.sort((a: T, b: T) => compareValues(a, b, sortBy as keyof T, sortOrder));
+      }
+
       await RedisInfrastructure.set(cacheKey, JSON.stringify(result), ttl);
 
       return result;

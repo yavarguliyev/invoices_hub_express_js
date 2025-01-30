@@ -1,4 +1,4 @@
-import { JsonController, Get, Post, Put, Delete, Param, Params, Body, HttpCode } from 'routing-controllers';
+import { JsonController, Get, Post, Put, Delete, Param, Params, Body, HttpCode, Authorized } from 'routing-controllers';
 
 import { ContainerHelper } from 'ioc/helpers/container.helper';
 import { ContainerItems } from 'ioc/static/container-items';
@@ -8,7 +8,9 @@ import { CreateUserArgs } from 'value-objects/inputs/user/create-user.args';
 import { UpdateUserArgs } from 'value-objects/inputs/user/update-user.args';
 import { DeleteUserArgs } from 'value-objects/inputs/user/delete-user.args';
 import { createVersionedRoute } from 'helpers/utility-functions.helper';
+import { Roles } from 'value-objects/enums/roles.enum';
 
+@Authorized([Roles.GlobalAdmin, Roles.Admin])
 @JsonController(createVersionedRoute('/users', 'v1'))
 export class UsersController {
   private userService: IUserService;

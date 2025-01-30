@@ -6,7 +6,8 @@ import BaseEntity from 'entities/base.entity';
 import Role from 'entities/role.entity';
 import { Entities } from 'value-objects/enums/entities.enum';
 import { PasswordStrengthDecorator } from 'decorators/password-strength.decorator';
-import Invoice from 'entities/invoices.entity';
+import Invoice from 'entities/invoice.entity';
+import Order from 'entities/order.entity';
 
 @Entity(Entities.USER)
 export default class User extends BaseEntity {
@@ -50,4 +51,7 @@ export default class User extends BaseEntity {
   @ManyToOne(() => Role, (role) => role.users, { lazy: true })
   @JoinColumn({ name: 'role_id' })
   public role: Role;
+
+  @OneToMany(() => Order, (order) => order.user)
+  public orders: Order[];
 }

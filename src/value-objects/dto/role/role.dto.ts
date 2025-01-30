@@ -1,9 +1,11 @@
 import { Expose } from 'class-transformer';
 
+import { Roles } from 'value-objects/enums/roles.enum';
+
 export class RoleDto {
   @Expose()
-  id: string;
+  id: number;
 
   @Expose()
-  name: string;
+  name: Roles;
 }

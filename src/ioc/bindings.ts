@@ -11,19 +11,24 @@ import { ExpressServerInfrastructure } from 'infrastructure/express-server.infra
 import { ErrorHandlerMiddleware } from 'middlewares/error-handler.middleware';
 import { registerService } from 'helpers/utility-functions.helper';
 import { DbConnectionInfrastructure } from 'infrastructure/db-connection.infrastructure';
-import User from 'entities/user.entity';
-import Role from 'entities/role.entity';
-import { UserRepository } from 'repositories/user.repository';
-import { RoleRepository } from 'repositories/role.repository';
 import { LoggerTracerInfrastructure } from 'infrastructure/logger-tracer.infrastructure';
 import { InvoicesController } from 'controllers/v1/invoices.controller';
 import { AuthController } from 'controllers/v1/auth.controller';
 import { AuthService } from 'services/auth.service';
 import { RoleService } from 'services/role.service';
-import Invoice from 'entities/invoices.entity';
-import { InvoiceRepository } from 'repositories/invoice.repository';
 import { RolesController } from 'controllers/v1/roles.controller';
 import { InvoiceService } from 'services/invoice.service';
+import { OrderService } from 'services/order.service';
+import { OrdersController } from 'controllers/v1/orders.controller';
+import { HealthcheckService } from 'services/healthcheck.service';
+import Invoice from 'entities/invoice.entity';
+import Order from 'entities/order.entity';
+import Role from 'entities/role.entity';
+import User from 'entities/user.entity';
+import { InvoiceRepository } from 'repositories/invoice.repository';
+import { OrderRepository } from 'repositories/order.repository';
+import { RoleRepository } from 'repositories/role.repository';
+import { UserRepository } from 'repositories/user.repository';
 
 export function configureContainers () {
   typeormUseContainer(Container);
@@ -37,10 +42,12 @@ export async function configureRepositories () {
 
     if (dataSource.isInitialized) {
       const invoiceRepository = dataSource.getRepository(Invoice);
+      const orderRepository = dataSource.getRepository(Order);
       const roleRepository = dataSource.getRepository(Role);
       const userRepository = dataSource.getRepository(User);
 
       Container.set(InvoiceRepository, invoiceRepository);
+      Container.set(OrderRepository, orderRepository);
       Container.set(RoleRepository, roleRepository);
       Container.set(UserRepository, userRepository);
     }
@@ -59,7 +66,9 @@ export function configureMiddlewares () {
 
 export function configureControllersAndServices () {
   registerService(ContainerItems.IAuthService, AuthService);
+  registerService(ContainerItems.IHealthcheckService, HealthcheckService);
   registerService(ContainerItems.IInvoiceService, InvoiceService);
+  registerService(ContainerItems.IOrderService, OrderService);
   registerService(ContainerItems.IRoleService, RoleService);
   registerService(ContainerItems.IUserService, UserService);
 
@@ -67,6 +76,7 @@ export function configureControllersAndServices () {
     .registerController(AuthController)
     .registerController(HealthcheckController)
     .registerController(InvoicesController)
+    .registerController(OrdersController)
     .registerController(RolesController)
     .registerController(UsersController);
 };

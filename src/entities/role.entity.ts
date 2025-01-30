@@ -4,7 +4,7 @@ import BaseEntity from 'entities/base.entity';
 import User from 'entities/user.entity';
 import { Roles } from 'value-objects/enums/roles.enum';
 import { Entities } from 'value-objects/enums/entities.enum';
-import Invoice from 'entities/invoices.entity';
+import Invoice from 'entities/invoice.entity';
 
 @Entity(Entities.ROLE)
 export default class Role extends BaseEntity {

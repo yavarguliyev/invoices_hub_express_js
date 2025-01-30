@@ -4,7 +4,7 @@ import { InvoiceStatus } from 'value-objects/enums/invoice-status.enum';
 
 export class InvoiceDto {
   @Expose()
-  id: string;
+  id: number;
 
   @Expose()
   title: string;

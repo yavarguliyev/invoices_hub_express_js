@@ -6,6 +6,8 @@ declare namespace NodeJS {
     SERVER_TIMEOUT: string;
     JWT_SECRET_KEY: string;
     JWT_EXPIRES_IN: string;
+    PASSPORT_JS_SESSION_SECRET_KEY: string;
+    CLUSTER_WORKERS: string;
 
     // redis configs
     REDIS_HOST: string;
