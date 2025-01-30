@@ -1,6 +1,6 @@
 import { Container } from 'typedi';
 import { compare } from 'bcrypt';
-import jwt, { SignOptions } from 'jsonwebtoken';
+import jwt, { SignOptions, JwtPayload } from 'jsonwebtoken';
 
 import { UserRepository } from 'repositories/user.repository';
 import { ResultMessage } from 'value-objects/enums/result-message.enum';
@@ -8,10 +8,11 @@ import { SigninArgs } from 'value-objects/inputs/auth/signin.args';
 import { NotAuthorizedError } from 'errors';
 import { LoginResponse } from 'value-objects/types/auth/login-response.type';
 import { GenerateLoginResponse } from 'value-objects/types/auth/generate-login-response.type';
+import { LoggerTracerInfrastructure } from 'infrastructure/logger-tracer.infrastructure';
 
 export interface IAuthService {
   signin (args: SigninArgs): Promise<LoginResponse>;
-  signout (): Promise<boolean>;
+  signout (accesToken: string): Promise<boolean>;
 }
 
 export class AuthService implements IAuthService {
@@ -36,7 +37,25 @@ export class AuthService implements IAuthService {
     return await this.generateLoginResponse({ id: user.id, email });
   }
 
-  async signout (): Promise<boolean> {
+  async signout (accesToken: string): Promise<boolean> {
+    const token = accesToken?.split(' ')[1] ?? '';
+    const decoded = jwt.decode(token) as JwtPayload;
+
+    if (!decoded?.exp) {
+      LoggerTracerInfrastructure.log('Signout failed: Invalid or malformed token', 'error');
+
+      return false;
+    }
+
+    const expiresIn = decoded.exp - Math.floor(Date.now() / 1000);
+
+    LoggerTracerInfrastructure.log(`User signed out. Token expires in ${expiresIn} seconds`, 'info');
+
+    // Note: This does not actually invalidate the access token.
+    // JWTs are stateless, meaning they remain valid until they expire.
+    // In the future, we could use Redis or a database to store a list of revoked tokens
+    // and check against it during authentication to enforce logout.
+
     return true;
   }
 

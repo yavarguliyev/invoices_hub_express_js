@@ -1,4 +1,4 @@
-import { Body, JsonController, Post } from 'routing-controllers';
+import { Body, HeaderParam, JsonController, Post } from 'routing-controllers';
 
 import { createVersionedRoute } from 'helpers/utility-functions.helper';
 import { ContainerHelper } from 'ioc/helpers/container.helper';
@@ -20,7 +20,7 @@ export class AuthController {
   }
 
   @Post('/signout')
-  async signout () {
-    return await this.authService.signout();
+  async signout (@HeaderParam('authorization') accesToken: string) {
+    return await this.authService.signout(accesToken);
   }
 }

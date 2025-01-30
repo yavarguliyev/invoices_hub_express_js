@@ -1,4 +1,4 @@
-import { JsonController, Get, Post, Put, Delete, Param, Params, Body, HttpCode, Authorized } from 'routing-controllers';
+import { JsonController, Get, Post, Put, Delete, Param, Params, Body, HttpCode, Authorized, QueryParams } from 'routing-controllers';
 
 import { ContainerHelper } from 'ioc/helpers/container.helper';
 import { ContainerItems } from 'ioc/static/container-items';
@@ -9,6 +9,7 @@ import { UpdateUserArgs } from 'value-objects/inputs/user/update-user.args';
 import { DeleteUserArgs } from 'value-objects/inputs/user/delete-user.args';
 import { createVersionedRoute } from 'helpers/utility-functions.helper';
 import { Roles } from 'value-objects/enums/roles.enum';
+import { GetQueryResultsArgs } from 'value-objects/inputs/query-results/get-query-results.args';
 
 @Authorized([Roles.GlobalAdmin, Roles.Admin])
 @JsonController(createVersionedRoute('/users', 'v1'))
@@ -20,8 +21,8 @@ export class UsersController {
   }
 
   @Get('/')
-  async get () {
-    return await this.userService.get();
+  async get (@QueryParams() query: GetQueryResultsArgs) {
+    return await this.userService.get(query);
   }
 
   @Get('/:id')

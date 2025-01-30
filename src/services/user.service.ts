@@ -16,9 +16,11 @@ import { UserDto } from 'value-objects/dto/user/user.dto';
 import { NotFoundError, BadRequestError } from 'errors';
 import { ResponseResults } from 'value-objects/types/services/response-results.type';
 import { RoleDto } from 'value-objects/dto/role/role.dto';
+import { GetQueryResultsArgs } from 'value-objects/inputs/query-results/get-query-results.args';
+import { queryResults } from 'helpers/utility-functions.helper';
 
 export interface IUserService {
-  get (): Promise<ResponseResults<UserDto>>;
+  get (query: GetQueryResultsArgs): Promise<ResponseResults<UserDto>>;
   getBy (userData: GetUserArgs): Promise<ResponseResults<UserDto>>;
   create (userData: CreateUserArgs): Promise<ResponseResults<UserDto>>;
   update (id: number, userData: UpdateUserArgs): Promise<ResponseResults<UserDto>>;
@@ -35,21 +37,10 @@ export class UserService implements IUserService {
   }
 
   @RedisDecorator<UserDto>({ keyTemplate: REDIS_CACHE_KEYS.USER_GET_LIST })
-  async get (): Promise<ResponseResults<UserDto>> {
-    const users = await this.userRepository.find();
+  async get (query: GetQueryResultsArgs): Promise<ResponseResults<UserDto>> {
+    const { payloads, total } = await queryResults(this.userRepository, query, UserDto, { RelatedDtoClass: RoleDto, relationField: 'role' });
 
-    const userDtos = await Promise.all(
-      users.map(async (user) => {
-        const role = await user.role;
-
-        const userDto = plainToInstance(UserDto, user, { excludeExtraneousValues: true });
-        userDto.role = plainToInstance(RoleDto, role, { excludeExtraneousValues: true });
-
-        return userDto;
-      })
-    );
-
-    return { payloads: userDtos, result: ResultMessage.SUCCEED };
+    return { payloads, total, result: ResultMessage.SUCCEED };
   }
 
   async getBy ({ id }: GetUserArgs): Promise<ResponseResults<UserDto>> {
