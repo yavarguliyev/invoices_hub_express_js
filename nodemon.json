@@ -8,5 +8,6 @@
   "delay": "1000",
   "restartable": "rs",
   "verbose": true,
-  "ext": "js,ts,json"
+  "ext": "js,ts,json",
+  "legacyWatch": true
 }

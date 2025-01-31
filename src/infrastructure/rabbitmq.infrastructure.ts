@@ -39,17 +39,25 @@ export default class RabbitMQInfrastructure {
   }
 
   static async disconnect (): Promise<void> {
-    const channel = RabbitMQInfrastructure.channel;
-    const connection = RabbitMQInfrastructure.connection;
-
-    if (channel) {
-      await channel.close();
-      delete RabbitMQInfrastructure.channel;
-    }
+    const channel = RabbitMQInfrastructure?.channel;
+    const connection = RabbitMQInfrastructure?.connection;
 
     if (connection) {
-      await connection.close();
+      connection.on('error', (err) => console.log('Connection error:', err));
+      connection.on('close', () => console.log('Connection closed'));
+    }
+
+    if (channel) {
+      channel.on('error', (err) => console.log('Channel error:', err));
+      channel.on('close', () => console.log('Channel closed'));
+    }
+
+    if (RabbitMQInfrastructure?.connection) {
       delete RabbitMQInfrastructure.connection;
+    }
+
+    if (RabbitMQInfrastructure?.channel) {
+      delete RabbitMQInfrastructure.channel;
     }
   }
 

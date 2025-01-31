@@ -1,0 +1,8 @@
+{
+  "type": "node",
+  "request": "launch",
+  "name": "Launch Program",
+  "program": "${workspaceFolder}/dist/app.js",
+  "skipFiles": ["<node_internals>/**"],
+  "stopOnEntry": false
+}

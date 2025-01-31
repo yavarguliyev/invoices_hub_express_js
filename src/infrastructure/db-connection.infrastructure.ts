@@ -30,7 +30,7 @@ export class DbConnectionInfrastructure {
   }
 
   static async disconnect (): Promise<void> {
-    if (this.dataSource?.isInitialized) {
+    if (this?.dataSource?.isInitialized) {
       await this.dataSource.destroy();
       delete this.dataSource;
     }

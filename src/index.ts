@@ -30,20 +30,28 @@ const initializeInfrastructures = async (): Promise<void> => {
   await initializeSubscribers();
 };
 
+const initializeServer = async (): Promise<http.Server> => {
+  const app = await Container.get(ExpressServerInfrastructure).get();
+  return http.createServer(app);
+};
+
+const startServer = (httpServer: http.Server, port: number): void => {
+  httpServer.listen(port, () => LoggerTracerInfrastructure.log(`Server running on port ${port}`, 'info'));
+  httpServer.timeout = parseInt(process.env.SERVER_TIMEOUT!);
+};
+
 const main = async (): Promise<void> => {
   try {
     await initializeInfrastructures();
 
-    const app = await Container.get(ExpressServerInfrastructure).get();
-    const httpServer = http.createServer(app);
+    const appServer = await initializeServer();
     const port = Number(process.env.PORT);
 
     if (!cluster.isPrimary) {
-      httpServer.listen(port, () => LoggerTracerInfrastructure.log(`Server running in ${process.env.NODE_ENV} mode on port ${port}`, 'info'));
-      httpServer.timeout = parseInt(process.env.SERVER_TIMEOUT!);
+      startServer(appServer, port);
     }
 
-    handleProcessSignals(ClusterShutdownHelper.shutDown.bind(ClusterShutdownHelper), httpServer);
+    handleProcessSignals(ClusterShutdownHelper.shutDown.bind(ClusterShutdownHelper), appServer);
   } catch (err: any) {
     LoggerTracerInfrastructure.log(`Error during initialization: ${err?.message || 'Unknown error occurred'}`, 'error');
     process.exit(1);
