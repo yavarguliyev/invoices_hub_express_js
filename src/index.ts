@@ -36,7 +36,7 @@ const main = async (): Promise<void> => {
 
     const app = await Container.get(ExpressServerInfrastructure).get();
     const httpServer = http.createServer(app);
-    const port = parseInt(process.env.PORT || '3000');
+    const port = Number(process.env.PORT);
 
     if (!cluster.isPrimary) {
       httpServer.listen(port, () => LoggerTracerInfrastructure.log(`Server running in ${process.env.NODE_ENV} mode on port ${port}`, 'info'));

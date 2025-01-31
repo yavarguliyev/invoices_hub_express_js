@@ -1,6 +1,6 @@
 import { Expose } from 'class-transformer';
 
-import { InvoiceStatus } from 'value-objects/enums/invoice-status.enum';
+import { InvoiceStatus } from 'common/enums/invoice-status.enum';
 
 export class InvoiceDto {
   @Expose()

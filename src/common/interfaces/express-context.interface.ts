@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 
-import { UserDto } from 'value-objects/dto/user/user.dto';
+import { UserDto } from 'common/dto/user.dto';
 
 export interface TokenPayload {
   id: number;

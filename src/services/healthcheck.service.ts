@@ -1,7 +1,7 @@
 import { DbConnectionInfrastructure } from 'infrastructure/db-connection.infrastructure';
 import RedisInfrastructure from 'infrastructure/redis.infrastructure';
 import RabbitMQInfrastructure from 'infrastructure/rabbitmq.infrastructure';
-import { HealthcheckResponse } from 'value-objects/types/controllers/healthcheck-response.type';
+import { HealthcheckResponse } from 'common/types/healthcheck-response.type';
 
 export interface IHealthcheckService {
   healthcheck (): Promise<HealthcheckResponse>;

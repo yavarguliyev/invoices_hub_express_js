@@ -1,10 +1,10 @@
-import { Entity, Column, ManyToOne, Index, BeforeInsert, BeforeRemove, JoinColumn, getManager, OneToMany } from 'typeorm';
+import { Entity, Column, ManyToOne, Index, BeforeInsert, BeforeRemove, JoinColumn, getManager, OneToMany, BeforeUpdate } from 'typeorm';
 import { IsEmail, IsString, Length } from 'class-validator';
 import bcrypt from 'bcrypt';
 
 import BaseEntity from 'entities/base.entity';
 import Role from 'entities/role.entity';
-import { Entities } from 'value-objects/enums/entities.enum';
+import { Entities } from 'common/enums/entities.enum';
 import { PasswordStrengthDecorator } from 'decorators/password-strength.decorator';
 import Invoice from 'entities/invoice.entity';
 import Order from 'entities/order.entity';
@@ -34,6 +34,7 @@ export default class User extends BaseEntity {
   password: string;
 
   @BeforeInsert()
+  @BeforeUpdate()
   async hashPassword (): Promise<void> {
     this.password = await bcrypt.hash(this.password, 10);
   }

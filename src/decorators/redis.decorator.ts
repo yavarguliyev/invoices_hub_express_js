@@ -1,5 +1,5 @@
 import RedisInfrastructure from 'infrastructure/redis.infrastructure';
-import { RedisDecoratorOption } from 'value-objects/types/decorator/decorator.types';
+import { RedisDecoratorOption } from 'common/types/decorator.types';
 import { compareValues, generateCacheKey } from 'helpers/utility-functions.helper';
 
 export function RedisDecorator<T> (options: RedisDecoratorOption<T>) {

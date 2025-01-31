@@ -9,6 +9,18 @@ declare namespace NodeJS {
     PASSPORT_JS_SESSION_SECRET_KEY: string;
     CLUSTER_WORKERS: string;
 
+    PASSWORD_UPPERCASE: string;
+    PASSWORD_LOWERCASE: string;
+    PASSWORD_NUMBERS: string;
+    PASSWORD_SPECIAL: string;
+    PASSWORD_LENGHT: string;
+    
+    STANDARD_ROLE_ID: string;
+
+    SWAGGER_SECURITY_OPTION: string;
+    SWAGGER_COMPONENTS_OPTION: string;
+    SWAGGER_METADATA_SCHEMA_OPTION: string;
+
     // redis configs
     REDIS_HOST: string;
     REDIS_PORT: string;

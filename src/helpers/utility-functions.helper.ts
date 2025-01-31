@@ -6,9 +6,9 @@ import { Repository } from 'typeorm';
 
 import { LoggerTracerInfrastructure } from 'infrastructure/logger-tracer.infrastructure';
 import { ContainerHelper } from 'ioc/helpers/container.helper';
-import { RedisCacheKeys, SortOrder } from 'value-objects/types/decorator/decorator.types';
-import { Version } from 'value-objects/types/controllers/version-control.type';
-import { GetQueryResultsArgs } from 'value-objects/inputs/query-results/get-query-results.args';
+import { RedisCacheKeys, SortOrder } from 'common/types/decorator.types';
+import { Version } from 'common/types/version-control.type';
+import { GetQueryResultsArgs } from 'common/inputs/get-query-results.args';
 
 export const safelyInitializeService = async (serviceName: string, initializeFn: () => Promise<void>): Promise<void> => {
   try {
@@ -102,6 +102,25 @@ export const queryResults = async <T extends Record<string, any>, DTO extends Re
 
 export const createVersionedRoute = (controllerPath: string, version: Version) => {
   return `/api/${version}${controllerPath}`;
+};
+
+export const generateStrongPassword = (length = Number(process.env.PASSWORD_LENGHT)): string => {
+  const uppercase = process.env.PASSWORD_UPPERCASE;
+  const lowercase = process.env.PASSWORD_LOWERCASE;
+  const numbers = process.env.PASSWORD_NUMBERS;
+  const specialChars = process.env.PASSWORD_SPECIAL;
+
+  const allChars = uppercase + lowercase + numbers + specialChars;
+  const getRandomChar = (charset: string) => charset[Math.floor(Math.random() * charset.length)];
+  let password = [getRandomChar(uppercase), getRandomChar(lowercase), getRandomChar(numbers), getRandomChar(specialChars)];
+
+  for (let i = 4; i < length; i++) {
+    password.push(getRandomChar(allChars));
+  }
+
+  password = password.sort(() => Math.random() - 0.5);
+
+  return password.join('');
 };
 
 export const winstonLogger = winston.createLogger({

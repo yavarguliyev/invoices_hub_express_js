@@ -3,8 +3,8 @@ import { IsString, Length, IsNumber } from 'class-validator';
 
 import BaseEntity from 'entities/base.entity';
 import User from 'entities/user.entity';
-import { Entities } from 'value-objects/enums/entities.enum';
-import { InvoiceStatus } from 'value-objects/enums/invoice-status.enum';
+import { Entities } from 'common/enums/entities.enum';
+import { InvoiceStatus } from 'common/enums/invoice-status.enum';
 import Role from 'entities/role.entity';
 import Order from 'entities/order.entity';
 

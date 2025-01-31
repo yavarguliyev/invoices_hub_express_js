@@ -1,7 +1,7 @@
 import { connect, Channel, Connection, ConsumeMessage } from 'amqplib';
 
 import { safelyInitializeService, getEnvVariable, ensureInitialized } from 'helpers/utility-functions.helper';
-import { Variables } from 'value-objects/enums/variables.enum';
+import { Variables } from 'common/enums/variables.enum';
 
 export default class RabbitMQInfrastructure {
   private static channel?: Channel;

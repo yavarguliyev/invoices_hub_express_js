@@ -2,11 +2,11 @@ import { Action } from 'routing-controllers';
 import passport from 'passport';
 
 import { NotAuthorizedError } from 'errors';
-import { ExpressContext } from 'value-objects/interfaces/express-context.interface';
+import { ExpressContext } from 'common/interfaces/express-context.interface';
 import { ContainerHelper } from 'ioc/helpers/container.helper';
 import { IUserService } from 'services/user.service';
 import { ContainerItems } from 'ioc/static/container-items';
-import { UserDto } from 'value-objects/dto/user/user.dto';
+import { UserDto } from 'common/dto/user.dto';
 
 export const getTokenData = (req: Request): Promise<UserDto> =>
   new Promise((resolve, reject) => {
@@ -16,7 +16,7 @@ export const getTokenData = (req: Request): Promise<UserDto> =>
       if (info) reject(new NotAuthorizedError());
     }
     )(req);
-  });
+});
 
 export const generateExpressContext = async (action: Action) => {
   const { request } = action;
@@ -46,15 +46,10 @@ export const generateExpressContext = async (action: Action) => {
 
 export const authorizationChecker = async (action: Action, roles: string[]): Promise<boolean> => {
   const context = await generateExpressContext(action);
-  const { currentUser } = context;
 
-  if (!currentUser?.role?.name) {
-    return false;
+  if (!context?.currentUser?.role?.name || roles.length === 0 || !roles.includes(context?.currentUser.role.name)) {
+    throw new NotAuthorizedError();
   }
 
-  if (roles.length === 0) {
-    return false;
-  }
-
-  return roles.includes(currentUser.role.name);
+  return true;
 };

@@ -2,11 +2,11 @@ import { Container } from 'typedi';
 
 import { RoleRepository } from 'repositories/role.repository';
 import { RedisDecorator } from 'decorators/redis.decorator';
-import { REDIS_CACHE_KEYS } from 'value-objects/types/decorator/decorator.types';
-import { RoleDto } from 'value-objects/dto/role/role.dto';
-import { ResultMessage } from 'value-objects/enums/result-message.enum';
-import { ResponseResults } from 'value-objects/types/services/response-results.type';
-import { GetQueryResultsArgs } from 'value-objects/inputs/query-results/get-query-results.args';
+import { REDIS_CACHE_KEYS } from 'common/types/decorator.types';
+import { RoleDto } from 'common/dto/role.dto';
+import { ResultMessage } from 'common/enums/result-message.enum';
+import { ResponseResults } from 'common/types/response-results.type';
+import { GetQueryResultsArgs } from 'common/inputs/get-query-results.args';
 import { queryResults } from 'helpers/utility-functions.helper';
 
 export interface IRoleService {

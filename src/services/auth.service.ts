@@ -3,11 +3,11 @@ import { compare } from 'bcrypt';
 import jwt, { SignOptions, JwtPayload } from 'jsonwebtoken';
 
 import { UserRepository } from 'repositories/user.repository';
-import { ResultMessage } from 'value-objects/enums/result-message.enum';
-import { SigninArgs } from 'value-objects/inputs/auth/signin.args';
+import { ResultMessage } from 'common/enums/result-message.enum';
+import { SigninArgs } from 'common/inputs/signin.args';
 import { NotAuthorizedError } from 'errors';
-import { LoginResponse } from 'value-objects/types/auth/login-response.type';
-import { GenerateLoginResponse } from 'value-objects/types/auth/generate-login-response.type';
+import { LoginResponse } from 'common/types/login-response.type';
+import { GenerateLoginResponse } from 'common/types/generate-login-response.type';
 import { LoggerTracerInfrastructure } from 'infrastructure/logger-tracer.infrastructure';
 
 export interface IAuthService {

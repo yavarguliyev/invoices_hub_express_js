@@ -1,29 +1,32 @@
 import { Container } from 'typedi';
 import { plainToInstance } from 'class-transformer';
+import bcrypt from 'bcrypt';
 
-import { EVENTS } from 'value-objects/enums/events.enum';
-import { REDIS_CACHE_KEYS } from 'value-objects/types/decorator/decorator.types';
+import { EVENTS } from 'common/enums/events.enum';
+import { REDIS_CACHE_KEYS } from 'common/types/decorator.types';
 import { RedisDecorator } from 'decorators/redis.decorator';
 import { EventPublisherDecorator } from 'decorators/event.publisher.decorator';
 import { UserRepository } from 'repositories/user.repository';
 import { RoleRepository } from 'repositories/role.repository';
-import { GetUserArgs } from 'value-objects/inputs/user/get-user.args';
-import { CreateUserArgs } from 'value-objects/inputs/user/create-user.args';
-import { UpdateUserArgs } from 'value-objects/inputs/user/update-user.args';
-import { DeleteUserArgs } from 'value-objects/inputs/user/delete-user.args';
-import { ResultMessage } from 'value-objects/enums/result-message.enum';
-import { UserDto } from 'value-objects/dto/user/user.dto';
+import { GetUserArgs } from 'common/inputs/get-user.args';
+import { CreateUserArgs } from 'common/inputs/create-user.args';
+import { UpdateUserArgs } from 'common/inputs/update-user.args';
+import { DeleteUserArgs } from 'common/inputs/delete-user.args';
+import { ResultMessage } from 'common/enums/result-message.enum';
+import { UserDto } from 'common/dto/user.dto';
 import { NotFoundError, BadRequestError } from 'errors';
-import { ResponseResults } from 'value-objects/types/services/response-results.type';
-import { RoleDto } from 'value-objects/dto/role/role.dto';
-import { GetQueryResultsArgs } from 'value-objects/inputs/query-results/get-query-results.args';
-import { queryResults } from 'helpers/utility-functions.helper';
+import { ResponseResults } from 'common/types/response-results.type';
+import { RoleDto } from 'common/dto/role.dto';
+import { GetQueryResultsArgs } from 'common/inputs/get-query-results.args';
+import { generateStrongPassword, queryResults } from 'helpers/utility-functions.helper';
+import { UpdateUserPasswordArgs } from 'common/inputs/update-user-password.args';
 
 export interface IUserService {
   get (query: GetQueryResultsArgs): Promise<ResponseResults<UserDto>>;
   getBy (userData: GetUserArgs): Promise<ResponseResults<UserDto>>;
   create (userData: CreateUserArgs): Promise<ResponseResults<UserDto>>;
   update (id: number, userData: UpdateUserArgs): Promise<ResponseResults<UserDto>>;
+  updatePassword (id: number, updatePasswordArgs: UpdateUserPasswordArgs): Promise<ResponseResults<UserDto>>;
   delete (userData: DeleteUserArgs): Promise<ResponseResults<UserDto>>;
 }
 
@@ -67,16 +70,18 @@ export class UserService implements IUserService {
       throw new BadRequestError('User already exists with the provided email.', { email });
     }
 
-    const userRole = await this.roleRepository.findOne({ where: { id: roleId } });
+    const userRole = await this.roleRepository.findOne({ where: { id: Number(process.env.STANDARD_ROLE_ID) } });
     if (!userRole) {
       throw new NotFoundError('Role not found.', { roleId });
     }
 
-    const user = this.userRepository.create({ ...userData, role: userRole });
-    const newUser = await this.userRepository.save(user);
-    const userDto = plainToInstance(UserDto, newUser, { excludeExtraneousValues: true });
+    const user = this.userRepository.create({ ...userData, role: userRole, password: generateStrongPassword() });
+    await this.userRepository.save(user);
 
-    return { payload: userDto, result: ResultMessage.SUCCEED };
+    // TODO: In the future, extend this functionality to send an email notification
+    // to the user with their login credentials (email and generated password).
+
+    return { result: ResultMessage.SUCCEED };
   }
 
   @EventPublisherDecorator({ keyTemplate: REDIS_CACHE_KEYS.USER_GET_LIST, event: EVENTS.USER_UPDATED })
@@ -98,6 +103,30 @@ export class UserService implements IUserService {
     const userDto = plainToInstance(UserDto, updatedUser, { excludeExtraneousValues: true });
 
     return { payload: userDto, result: ResultMessage.SUCCEED };
+  }
+
+  @EventPublisherDecorator({ keyTemplate: REDIS_CACHE_KEYS.USER_GET_LIST, event: EVENTS.USER_PASSWORD_UPDATED })
+  async updatePassword (id: number, updatePasswordArgs: UpdateUserPasswordArgs): Promise<ResponseResults<UserDto>> {
+    const { currentPassword, password, confirmPassword } = updatePasswordArgs;
+
+    const userToBeUpdated = await this.userRepository.findOneBy({ id });
+    if (!userToBeUpdated) {
+      throw new NotFoundError(`User with ID ${id} not found.`, { id });
+    }
+
+    const isCurrentPasswordValid = await bcrypt.compare(currentPassword, userToBeUpdated.password);
+    if (!isCurrentPasswordValid) {
+      throw new BadRequestError('Current password is incorrect.', { id });
+    }
+
+    if (password !== confirmPassword) {
+      throw new BadRequestError('Passwords do not match.', { id });
+    }
+
+    userToBeUpdated.password = password;
+    await this.userRepository.save(userToBeUpdated);
+
+    return { result: ResultMessage.SUCCEED };
   }
 
   @EventPublisherDecorator({ keyTemplate: REDIS_CACHE_KEYS.USER_GET_LIST, event: EVENTS.USER_DELETED })

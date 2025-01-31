@@ -1,6 +1,6 @@
 import RedisInfrastructure from 'infrastructure/redis.infrastructure';
 import RabbitMQInfrastructure from 'infrastructure/rabbitmq.infrastructure';
-import { EventDecoratorOption } from 'value-objects/types/decorator/decorator.types';
+import { EventDecoratorOption } from 'common/types/decorator.types';
 import { generateCacheKey } from 'helpers/utility-functions.helper';
 
 export function EventPublisherDecorator (options: EventDecoratorOption) {

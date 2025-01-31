@@ -1,6 +1,6 @@
 import { Expose } from 'class-transformer';
 
-import { Roles } from 'value-objects/enums/roles.enum';
+import { Roles } from 'common/enums/roles.enum';
 
 export class RoleDto {
   @Expose()

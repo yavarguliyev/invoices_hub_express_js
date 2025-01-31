@@ -1,6 +1,6 @@
 import { Expose } from 'class-transformer';
 
-import { RoleDto } from 'value-objects/dto/role/role.dto';
+import { RoleDto } from 'common/dto/role.dto';
 
 export class UserDto {
   @Expose()
