@@ -128,6 +128,7 @@
 * Unit & E2E Testing for reliability
 * Security Best Practices
 * Scalable & Maintainable Codebase
+* Clustering for load balancing and high availability
 * Domain-Driven Design Principles and Patterns
 
 ---
