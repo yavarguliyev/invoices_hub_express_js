@@ -117,7 +117,7 @@
 
 # ⚙️ Domain-Driven Design Principles and Patterns
 
-* GraphQL API with ExpressJS & TypeScript
+* REST API with ExpressJS & TypeScript
 * PostgreSQL with ORM for database management
 * Worker Threads to handle async processing
 * Redis for caching and queue management
