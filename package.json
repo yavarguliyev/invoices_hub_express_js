@@ -12,7 +12,7 @@
 		"lint": "esw --watch --ext .ts src",
 		"build": "yarn clean:dist",
 		"clean:migrations": "rimraf migrations/*.js",
-		"typeorm": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli", 
+		"typeorm": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli",
 		"migrations:create": "node scripts/createMigration.js",
 		"migrations:generate": "yarn typeorm migration:generate migrations/ -d src/data-source.ts",
 		"migrations:run": "yarn typeorm migration:run -d src/data-source.ts",
@@ -44,7 +44,6 @@
 		"ts-node": "^10.9.2",
 		"typedi": "^0.10.0",
 		"typeorm": "^0.3.20",
-		"typeorm-typedi-extensions": "^0.4.1",
 		"winston": "^3.17.0"
 	},
 	"devDependencies": {
@@ -70,6 +69,5 @@
 		"nodemon": "^3.1.9",
 		"swagger-ui-express": "^5.0.1",
 		"typescript": "^5.7.3"
-	},
-	"packageManager": "yarn@4.6.0"
+	}
 }
