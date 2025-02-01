@@ -8,7 +8,7 @@ export function RedisDecorator<T> (options: RedisDecoratorOption<T>) {
 
     descriptor.value = async function (...args: any[]) {
       const { keyTemplate, sortBy = 'id', sortOrder = 'desc' } = options;
-      const { cacheKey, ttl } = generateCacheKey(keyTemplate);
+      const { cacheKey, ttl } = generateCacheKey(keyTemplate, args);
 
       const cachedValue = await RedisInfrastructure.get(cacheKey);
       if (cachedValue) {
@@ -21,6 +21,7 @@ export function RedisDecorator<T> (options: RedisDecoratorOption<T>) {
       }
 
       await RedisInfrastructure.set(cacheKey, JSON.stringify(result), ttl);
+      await RedisInfrastructure.setHashKeys(keyTemplate, cacheKey);
 
       return result;
     };

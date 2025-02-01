@@ -29,6 +29,11 @@ export default class RedisInfrastructure {
     return value ? (JSON.parse(value) as T) : undefined;
   }
 
+  static async getHashKeys (key: string): Promise<string[]> {
+    const client = ensureInitialized(RedisInfrastructure.client, Variables.REDIS_SERVICE);
+    return await client?.sMembers(key);
+  }
+
   static async set (key: string, value: string, ttl?: number): Promise<void> {
     const client = ensureInitialized(RedisInfrastructure.client, Variables.REDIS_SERVICE);
 
@@ -39,10 +44,22 @@ export default class RedisInfrastructure {
     }
   }
 
+  static async setHashKeys (key: string, cacheKey: string) {
+    const client = ensureInitialized(RedisInfrastructure.client, Variables.REDIS_SERVICE);
+    await client?.sAdd(key, cacheKey);
+  }
+
   static async delete (key: string): Promise<void> {
     const client = ensureInitialized(RedisInfrastructure.client, Variables.REDIS_SERVICE);
 
     await client?.del(key);
+  }
+
+  static async deletekeys (keys: string[]) {
+    const client = ensureInitialized(RedisInfrastructure.client, Variables.REDIS_SERVICE);
+    if (keys.length) {
+      await client?.del(...keys);
+    }
   }
 
   static async disconnect (): Promise<void> {

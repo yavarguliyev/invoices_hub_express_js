@@ -41,9 +41,9 @@ export class InvoiceService implements IInvoiceService {
 
     const invoice = this.invoiceRepository.create(this.createInvoice(order, user, status));
     const newInvoice = await this.invoiceRepository.save(invoice);
-    const userDto = plainToInstance(InvoiceDto, newInvoice, { excludeExtraneousValues: true });
+    const invoiceDto = plainToInstance(InvoiceDto, newInvoice, { excludeExtraneousValues: true }) as InvoiceDto;
 
-    return { payload: userDto, result: ResultMessage.SUCCEED };
+    return { payload: invoiceDto, result: ResultMessage.SUCCEED };
   }
 
   private createInvoice (order: Order, user: User, status: InvoiceStatus) {

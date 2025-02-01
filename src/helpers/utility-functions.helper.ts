@@ -52,10 +52,10 @@ export const registerService = <T> (id: string, service: Constructable<T>, isSin
   }
 };
 
-export const generateCacheKey = (keyTemplate: string): RedisCacheKeys => {
-  const ttl = Number(process.env.REDIS_DEFAULT_CACHE_TTL);
-  const funcHash = crypto.createHash('md5').update(keyTemplate.toString()).digest('hex');
-  const cacheKey = `${keyTemplate}:${funcHash}:${keyTemplate}`;
+export const generateCacheKey = (keyTemplate: string, args: any[]): RedisCacheKeys => {
+  const ttl = Number(process.env.REDIS_DEFAULT_CACHE_TTL) || 3600;
+  const argsHash = crypto.createHash('md5').update(JSON.stringify(args)).digest('hex');
+  const cacheKey = `${keyTemplate}:${argsHash}`;
 
   return { cacheKey, ttl };
 };

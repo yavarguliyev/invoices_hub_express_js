@@ -55,7 +55,7 @@ export class UserService implements IUserService {
 
     const role = await user.role;
 
-    const userDto = plainToInstance(UserDto, user, { excludeExtraneousValues: true });
+    const userDto = plainToInstance(UserDto, user, { excludeExtraneousValues: true }) as UserDto;
     userDto.role = plainToInstance(RoleDto, role, { excludeExtraneousValues: true });
 
     return { payload: userDto, result: ResultMessage.SUCCEED };
@@ -99,8 +99,9 @@ export class UserService implements IUserService {
     }
 
     Object.assign(userToBeUpdated, userData);
+
     const updatedUser = await this.userRepository.save(userToBeUpdated);
-    const userDto = plainToInstance(UserDto, updatedUser, { excludeExtraneousValues: true });
+    const userDto = plainToInstance(UserDto, updatedUser, { excludeExtraneousValues: true }) as UserDto;
 
     return { payload: userDto, result: ResultMessage.SUCCEED };
   }
