@@ -1,6 +1,5 @@
 import { Constructable } from 'typedi';
 import crypto from 'crypto';
-import winston from 'winston';
 import { plainToInstance } from 'class-transformer';
 import { Repository } from 'typeorm';
 
@@ -95,7 +94,7 @@ export const queryResults = async <T extends Record<string, any>, DTO extends Re
 
       return dto;
     })
-  );
+  ) as DTO[];
 
   return { payloads: dtos, total };
 };
@@ -122,12 +121,3 @@ export const generateStrongPassword = (length = Number(process.env.PASSWORD_LENG
 
   return password.join('');
 };
-
-export const winstonLogger = winston.createLogger({
-  level: 'info',
-  format: winston.format.combine(
-    winston.format.timestamp(),
-    winston.format.printf(({ timestamp, level, message }) => `[${timestamp}] [${level.toUpperCase()}] ${message}`)
-  ),
-  transports: [new winston.transports.Console({ format: winston.format.combine(winston.format.colorize(), winston.format.simple()) })]
-});
