@@ -1,9 +1,9 @@
 import { Service } from 'typedi';
 import { MigrationInterface, QueryRunner, Table, TableForeignKey, TableIndex } from 'typeorm';
 
-import { Entities } from '../src/value-objects/enums/entities.enum';
-import { InvoiceStatus } from '../src/value-objects/enums/invoice-status.enum';
-import { OrderStatus } from '../src/value-objects/enums/order-status.enum';
+import { Entities } from '../src/common/enums/entities.enum';
+import { InvoiceStatus } from '../src/common/enums/invoice-status.enum';
+import { OrderStatus } from '../src/common/enums/order-status.enum';
 
 @Service()
 export class CreateUsersRolesInvoicesAndOrdersTables1737788798120 implements MigrationInterface {
@@ -161,13 +161,13 @@ export class CreateUsersRolesInvoicesAndOrdersTables1737788798120 implements Mig
         await queryRunner.query(`
             INSERT INTO "users" ("email", "first_name", "last_name", "password", "role_id", "created_at", "updated_at")
             VALUES
-                ('global_admin@example.com', 'Alice', 'Global Admin', '$2b$10$xnlUQ65DD06uI3M0EKAHP.0v.mN53s.AcXaN8pSav6rj8.ki68GUq', 
+                ('global_admin@example.com', 'Alice', 'Global Admin', '$2b$10$8OG/d5Uk8h45FtcnhlP33eHknL0NCwYe1FikPbER8gd/YJgKZBm6S', 
                     (SELECT id FROM "roles" WHERE name = 'Global Admin'), NOW(), NOW()),
-                ('admin@example.com', 'Bob', 'Admin', '$2b$10$xnlUQ65DD06uI3M0EKAHP.0v.mN53s.AcXaN8pSav6rj8.ki68GUq', 
+                ('admin@example.com', 'Bob', 'Admin', '$2b$10$8OG/d5Uk8h45FtcnhlP33eHknL0NCwYe1FikPbER8gd/YJgKZBm6S', 
                     (SELECT id FROM "roles" WHERE name = 'Admin'), NOW(), NOW()),
-                ('contributor@example.com', 'Charlie', 'Contributor', '$2b$10$xnlUQ65DD06uI3M0EKAHP.0v.mN53s.AcXaN8pSav6rj8.ki68GUq', 
+                ('contributor@example.com', 'Charlie', 'Contributor', '$2b$10$8OG/d5Uk8h45FtcnhlP33eHknL0NCwYe1FikPbER8gd/YJgKZBm6S', 
                     (SELECT id FROM "roles" WHERE name = 'Contributor'), NOW(), NOW()),
-                ('standard@example.com', 'Diana', 'Standard', '$2b$10$xnlUQ65DD06uI3M0EKAHP.0v.mN53s.AcXaN8pSav6rj8.ki68GUq', 
+                ('standard@example.com', 'Diana', 'Standard', '$2b$10$8OG/d5Uk8h45FtcnhlP33eHknL0NCwYe1FikPbER8gd/YJgKZBm6S', 
                     (SELECT id FROM "roles" WHERE name = 'Standard'), NOW(), NOW());
         `);
 

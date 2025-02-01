@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { DataSource } from 'typeorm';
 
 import Invoice from 'entities/invoice.entity';
@@ -16,5 +17,5 @@ export const AppDataSource = new DataSource({
   synchronize: false,
   logging: false,
   subscribers: [],
-  migrations: []
+  migrations: ['migrations/*.ts']
 });
