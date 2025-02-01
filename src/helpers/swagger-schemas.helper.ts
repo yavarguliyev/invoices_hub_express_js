@@ -186,35 +186,105 @@ export const swaggerSchemas = {
   },
   orders: {
     getOrdersList: {
-          summary: 'GET Order List',
-          description: 'Returns a list of orders',
-          responses: {
-            200: {
-              description: 'Successful response with order list',
-              content: {
-                'application/json': {
-                  schema: {
-                    type: 'object',
-                    properties: {
-                      payloads: {
-                        type: 'array',
-                        items: {
-                          type: 'object',
-                          properties: {
-                            id: { type: 'number' },
-                            totalAmount: { type: 'number' },
-                            status: { type: 'string', enum: Object.values(OrderStatus) }
-                          }
-                        }
-                      },
-                      total: { type: 'number' },
-                      result: { type: 'string', enum: Object.values(ResultMessage) }
+      summary: 'GET Order List',
+      description: 'Returns a list of orders',
+      responses: {
+        200: {
+          description: 'Successful response with order list',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  payloads: {
+                    type: 'array',
+                    items: {
+                      type: 'object',
+                      properties: {
+                        id: { type: 'number' },
+                        totalAmount: { type: 'number' },
+                        status: { type: 'string', enum: Object.values(OrderStatus) }
+                      }
                     }
-                  }
+                  },
+                  total: { type: 'number' },
+                  result: { type: 'string', enum: Object.values(ResultMessage) }
                 }
               }
             }
           }
+        }
+      }
+    } as OpenAPIParam,
+    createOrder: {
+      summary: 'Create a Order',
+      description: 'Create a new order with the provided information.',
+      requestBody: {
+        required: true,
+        content: {
+          'application/json': {
+            schema: {
+              $ref: '#/components/schemas/CreateOrderArgs'
+            }
+          }
+        }
+      },
+      responses: {
+        201: {
+          description: 'Order created successfully.'
+        },
+        400: {
+          description: 'Bad request, invalid data.'
+        }
+      }
+    } as OpenAPIParam,
+    approveOrder: {
+      summary: 'Approve the Order',
+      description: 'Approve order with the provided information.',
+      parameters: [
+        {
+          name: 'id',
+          in: 'path',
+          required: true,
+          description: 'Order ID to approve',
+          schema: {
+            type: 'integer',
+            example: 1
+          }
+        }
+      ],
+      responses: {
+        201: {
+          description: 'Order approved successfully.'
+        },
+        400: {
+          description: 'Bad request, invalid data.'
+        }
+      }
+    } as OpenAPIParam,
+    cancelOrder: {
+      summary: 'Cancel the Order',
+      description: 'Cancel order with the provided information.',
+      parameters: [
+        {
+          name: 'id',
+          in: 'path',
+          required: true,
+          description: 'Order ID to cancel',
+          schema: {
+            type: 'integer',
+            example: 1
+          }
+        }
+      ],
+      responses: {
+        201: {
+          description: 'Order canceled successfully.'
+        },
+        400: {
+          description: 'Bad request, invalid data.'
+        }
+      }
     } as OpenAPIParam
   },
   roles: {

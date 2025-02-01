@@ -14,7 +14,7 @@ import { InvoicesController } from 'controllers/v1/invoices.controller';
 import { RolesController } from 'controllers/v1/roles.controller';
 import { OrdersController } from 'controllers/v1/orders.controller';
 import { AuthStrategiesInfrastructure } from 'infrastructure/auth-strategies.infrastructure';
-import { authorizationChecker } from 'helpers/authorization-checker.helper';
+import { authorizationChecker, currentUserChecker } from 'helpers/authorization-checker.helper';
 import { getSchemasList } from 'helpers/swagger-schemas.helper';
 
 export interface IExpressServerInfrastructure {
@@ -48,6 +48,7 @@ export class ExpressServerInfrastructure implements IExpressServerInfrastructure
       controllers,
       middlewares: [ErrorHandlerMiddleware],
       authorizationChecker,
+      currentUserChecker,
       defaultErrorHandler: false
     });
 

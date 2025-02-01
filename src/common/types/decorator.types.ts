@@ -1,8 +1,7 @@
 import { EVENTS } from 'common/enums/events.enum';
 
 export const REDIS_CACHE_KEYS = {
-  INVOICE_GET_LIST: 'invoice:get:list',
-  ORDER_GET_LIST: 'order:get:list',
+  ORDER_INVOICE_GET_LIST: 'order:invoice:get:list',
   ROLE_GET_LIST: 'role:get:list',
   USER_GET_LIST: 'user:get:list'
 } as const;

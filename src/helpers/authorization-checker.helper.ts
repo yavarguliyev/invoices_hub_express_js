@@ -2,13 +2,13 @@ import { Action } from 'routing-controllers';
 import passport from 'passport';
 
 import { NotAuthorizedError } from 'errors';
-import { ExpressContext } from 'common/interfaces/express-context.interface';
+import { ExpressContext, TokenPayload } from 'common/interfaces/express-context.interface';
 import { ContainerHelper } from 'ioc/helpers/container.helper';
 import { IUserService } from 'services/user.service';
 import { ContainerItems } from 'ioc/static/container-items';
 import { UserDto } from 'common/dto/user.dto';
 
-export const getTokenData = (req: Request): Promise<UserDto> =>
+export const getTokenData = (req: Request): Promise<TokenPayload> =>
   new Promise((resolve, reject) => {
     passport.authenticate('jwt', { session: false, failureFlash: false, failWithError: true }, (err: any, payload: any, info: any) => {
       if (err) reject(err);
@@ -28,13 +28,9 @@ export const generateExpressContext = async (action: Action) => {
 
   const tokenData = await getTokenData(request);
 
-  const expressContext: ExpressContext = {
-    request,
-    tokenData: tokenData as any,
-    token
-  };
-
+  const expressContext: ExpressContext = { request, tokenData, token };
   const userService = ContainerHelper.get<IUserService>(ContainerItems.IUserService);
+
   const user = await userService.getBy({ id: tokenData.id });
 
   if (user?.payload) {
@@ -42,6 +38,16 @@ export const generateExpressContext = async (action: Action) => {
   }
 
   return expressContext;
+};
+
+export const currentUserChecker = async (action: Action): Promise<UserDto> => {
+  const context = await generateExpressContext(action);
+
+  if (!context?.currentUser) {
+    throw new NotAuthorizedError();
+  }
+
+  return context.currentUser;
 };
 
 export const authorizationChecker = async (action: Action, roles: string[]): Promise<boolean> => {
