@@ -92,6 +92,11 @@
 
 # 🧩🔄⚙️🌐 Interaction Flow in DDD and Architecture
 
+
+![Interaction Flow in DDD and Architecture](./image/interaction-diagram.png)
+
+---
+
 ## 1. Domain Layer:
 
 * The core domain logic is housed here, where entities like Order, User, and Invoice live. They represent the key concepts in the business domain.
