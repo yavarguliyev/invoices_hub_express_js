@@ -76,6 +76,10 @@
 
 # 🏗 Architecture Overview
 
+![Architecture Overview](./image/logical-diagram.png)
+
+---
+
 #### This Node.js application follows a monolithic architecture that is modular and scalable. It uses the principles of Domain-Driven Design (DDD) to ensure that the codebase is well-organized and follows the business domain logic.
 
 * Monolithic: While designed as a monolithic application, it’s built with an architecture that supports easy splitting into microservices should the need arise.
