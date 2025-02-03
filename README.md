@@ -332,7 +332,6 @@ yarn migrations:revert
 │   └── ...
 ├── /middlewares
 │   ├── error.middleware.ts
-│   └── ...
 ├── data-source.ts
 ├── index.ts.ts
 /tests
@@ -392,11 +391,15 @@ yarn test
 
 ### 2. Approve the Order
 
-#### Endpoint: PATCH {{URL}}/api/v1/orders/{{id}}approve
+```javascript
+Endpoint: PATCH {{URL}}/api/v1/orders/{{id}}/approve
+```
 
 ### 3. Cancel the Order
 
-#### Endpoint: PATCH {{URL}}/api/v1/orders/{{id}}cancel
+```javascript
+Endpoint: PATCH {{URL}}/api/v1/orders/{{id}}/cancel
+```
 
 ---
 
