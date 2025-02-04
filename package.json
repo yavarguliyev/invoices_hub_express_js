@@ -20,7 +20,12 @@
 		"mup": "yarn migrations:run",
 		"mdn": "yarn migrations:revert",
 		"start:tsclint": "yarn clean:dist && concurrently --kill-others --names lint,tsc,nodemon --prefix-colors green,blue,yellow \"yarn lint\" \"tsc --preserveWatchOutput --watch\"",
-		"start": "yarn start:tsclint \"sleep 8 && nodemon\""
+		"start": "yarn start:tsclint \"sleep 8 && nodemon\"",
+		"test": "jest --config jest.config.js",
+		"test:watch": "jest --watch",
+		"test:coverage": "jest --coverage",
+		"test:unit": "jest --testPathPattern=tests/unit",
+		"test:integration": "jest --testPathPattern=tests/integration"
 	},
 	"dependencies": {
 		"amqplib": "^0.10.5",

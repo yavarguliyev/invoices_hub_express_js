@@ -367,10 +367,26 @@ yarn start
 
 # 🧪✅🔍 Running Tests
 
-##### To run unit tests:
+##### To run tests, execute the following command:
 
 ```javascript
 yarn test
+```
+
+## Running Tests in Watch Mode:
+
+##### For continuous testing while developing, run:
+
+```javascript
+yarn test:watch
+```
+
+## Running Tests with Coverage Report:
+
+##### To generate a test coverage report, use:
+
+```javascript
+yarn test:coverage
 ```
 
 ---

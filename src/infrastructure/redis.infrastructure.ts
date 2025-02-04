@@ -58,7 +58,7 @@ export default class RedisInfrastructure {
   static async deletekeys (keys: string[]) {
     const client = ensureInitialized(RedisInfrastructure.client, Variables.REDIS_SERVICE);
     if (keys.length) {
-      await client?.del(...keys);
+      await client.del(keys);
     }
   }
 
