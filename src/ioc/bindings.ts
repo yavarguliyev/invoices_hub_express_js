@@ -29,6 +29,7 @@ import { InvoiceRepository } from 'repositories/invoice.repository';
 import { OrderRepository } from 'repositories/order.repository';
 import { RoleRepository } from 'repositories/role.repository';
 import { UserRepository } from 'repositories/user.repository';
+import { HelmetMiddleware } from 'middlewares/helmet.middleware';
 
 export function configureContainers () {
   typeormUseContainer(Container);
@@ -61,6 +62,7 @@ export function configureInfrastructures () {
 };
 
 export function configureMiddlewares () {
+  Container.set(HelmetMiddleware, new HelmetMiddleware());
   Container.set(ErrorHandlerMiddleware, new ErrorHandlerMiddleware());
 };
 

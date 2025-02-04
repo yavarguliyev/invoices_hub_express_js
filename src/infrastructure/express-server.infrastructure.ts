@@ -16,6 +16,7 @@ import { OrdersController } from 'controllers/v1/orders.controller';
 import { AuthStrategiesInfrastructure } from 'infrastructure/auth-strategies.infrastructure';
 import { authorizationChecker, currentUserChecker } from 'helpers/authorization-checker.helper';
 import { getSchemasList } from 'helpers/swagger-schemas.helper';
+import { HelmetMiddleware } from 'middlewares/helmet.middleware';
 
 export interface IExpressServerInfrastructure {
   get(): Promise<Express>;
@@ -46,7 +47,7 @@ export class ExpressServerInfrastructure implements IExpressServerInfrastructure
 
     const app = createExpressServer({
       controllers,
-      middlewares: [ErrorHandlerMiddleware],
+      middlewares: [HelmetMiddleware, ErrorHandlerMiddleware],
       authorizationChecker,
       currentUserChecker,
       defaultErrorHandler: false

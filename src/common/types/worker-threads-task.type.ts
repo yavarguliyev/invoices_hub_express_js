@@ -1,1 +1,3 @@
-export type WorkerThreadsTask = { name: string; params: any; };
+import { WorkerThreadsOperations } from 'common/enums/worker-threads-operations.enum';
+
+export type WorkerThreadsTask = { name: WorkerThreadsOperations; params: any; };

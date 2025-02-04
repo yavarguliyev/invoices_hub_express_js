@@ -389,6 +389,36 @@ yarn test:watch
 yarn test:coverage
 ```
 
+# 🏋️‍♂️ Load Testing
+
+##### To check how many requests your application can handle, follow these steps:
+
+## 1. Start the Application
+#### Make sure the application is running before performing the load test:
+
+```javascript
+yarn start
+```
+
+## 2. Run the Load Test
+#### Once the app is running, execute the following command:
+
+```javascript
+yarn loadtest:dev
+```
+
+### This will send 3,500 requests with 1,500 concurrent users to the healthcheck endpoint.
+
+## Command Breakdown:
+
+* -n 3500: Total number of requests.
+* -c 1500: Number of concurrent users.
+* -k: Enables keep-alive to reuse TCP connections.
+
+# 📊 Interpreting the Results
+
+#### After the test, you'll see a summary of requests per second, response times, and possible failures. This helps assess the system’s performance under heavy load.
+
 ---
 
 # 🛠 Usage

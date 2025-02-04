@@ -1,11 +1,12 @@
 import { parentPort } from 'worker_threads';
 
 import { WorkerThreadsTask } from 'common/types/worker-threads-task.type';
+import { WorkerThreadsOperations } from 'common/enums/worker-threads-operations.enum';
 
 class TaskHandler {
   static async execute (task: WorkerThreadsTask): Promise<any> {
     switch (task.name) {
-      case 'heavyComputation':
+      case WorkerThreadsOperations.HEAVY_COMPUTATION:
         return TaskHandler.heavyComputation(task.params);
       default:
         throw new Error(`Unknown task: ${task.name}`);

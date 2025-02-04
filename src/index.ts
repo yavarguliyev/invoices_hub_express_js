@@ -16,15 +16,15 @@ import { ExpressServerInfrastructure } from 'infrastructure/express-server.infra
 
 config();
 
-const initializeInfrastructures = async (): Promise<void> => {
+const initializeDependencyInjections = async (): Promise<void> => {
   configureContainers();
   await configureRepositories();
   configureInfrastructures();
   configureMiddlewares();
   configureControllersAndServices();
+};
 
-  ClusterInfrastructure.initialize();
-
+const initializeInfrastructureServices = async (): Promise<void> => {
   await RedisInfrastructure.initialize();
   await RabbitMQInfrastructure.initialize();
   await initializeSubscribers();
@@ -42,7 +42,10 @@ const startServer = (httpServer: http.Server, port: number): void => {
 
 const main = async (): Promise<void> => {
   try {
-    await initializeInfrastructures();
+    await initializeDependencyInjections();
+    await initializeInfrastructureServices();
+
+    ClusterInfrastructure.initialize();
 
     const appServer = await initializeServer();
     const port = Number(process.env.PORT);

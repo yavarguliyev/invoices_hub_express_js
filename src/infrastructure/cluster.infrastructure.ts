@@ -5,6 +5,7 @@ import path from 'path';
 import { LoggerTracerInfrastructure } from 'infrastructure/logger-tracer.infrastructure';
 import { ClusterShutdownHelper } from 'helpers/cluster-shutdown.helper';
 import { handleProcessSignals } from 'helpers/utility-functions.helper';
+import { WorkerThreadsOperations } from 'common/enums/worker-threads-operations.enum';
 
 export class ClusterInfrastructure {
   static initialized = false;
@@ -18,7 +19,7 @@ export class ClusterInfrastructure {
 
     try {
       this.validateEnvVars();
-      const numCPUs = Number(process.env.CLUSTER_WORKERS) || 4;
+      const numCPUs = Number(process.env.CLUSTER_WORKERS);
 
       if (cluster.isPrimary) {
         this.forkWorkers(numCPUs);
@@ -79,6 +80,6 @@ export class ClusterInfrastructure {
       }
     });
 
-    worker.postMessage({ name: 'heavyComputation', params: { total: Number(process.env.HEAVY_COMPUTATION_TOTAL) } });
+    worker.postMessage({ name: WorkerThreadsOperations.HEAVY_COMPUTATION, params: { total: Number(process.env.HEAVY_COMPUTATION_TOTAL) } });
   }
 }

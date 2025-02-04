@@ -21,6 +21,7 @@ export class HealthcheckService implements IHealthcheckService {
       message: 'OK',
       uptime: process.uptime(),
       timestamp: Date.now(),
+      workerId: process.pid,
       ...Object.fromEntries(Object.entries(services).map(([key, value]) => [key, value ? 'healthy' : 'unhealthy']))
     } as HealthcheckResponse;
   }
