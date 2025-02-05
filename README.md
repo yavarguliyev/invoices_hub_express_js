@@ -407,12 +407,12 @@ yarn start
 yarn loadtest:dev
 ```
 
-### This will send 3,500 requests with 1,500 concurrent users to the healthcheck endpoint.
+### This will send 3,600 requests with 1,200 concurrent users to the healthcheck endpoint.
 
 ## Command Breakdown:
 
-* -n 3500: Total number of requests.
-* -c 1500: Number of concurrent users.
+* -n 3600: Total number of requests.
+* -c 1200: Number of concurrent users.
 * -k: Enables keep-alive to reuse TCP connections.
 
 # 📊 Interpreting the Results

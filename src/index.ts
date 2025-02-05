@@ -42,19 +42,19 @@ const startServer = (httpServer: http.Server, port: number): void => {
 
 const main = async (): Promise<void> => {
   try {
-    await initializeDependencyInjections();
-    await initializeInfrastructureServices();
-
     ClusterInfrastructure.initialize();
 
-    const appServer = await initializeServer();
-    const port = Number(process.env.PORT);
-
     if (!cluster.isPrimary) {
-      startServer(appServer, port);
-    }
+      await initializeDependencyInjections();
+      await initializeInfrastructureServices();
 
-    handleProcessSignals(ClusterShutdownHelper.shutDown.bind(ClusterShutdownHelper), appServer);
+      const appServer = await initializeServer();
+      const port = Number(process.env.PORT);
+
+      startServer(appServer, port);
+
+      handleProcessSignals(ClusterShutdownHelper.shutDown.bind(ClusterShutdownHelper), appServer);
+    }
   } catch (err: any) {
     LoggerTracerInfrastructure.log(`Error during initialization: ${err?.message || 'Unknown error occurred'}`, 'error');
     process.exit(1);

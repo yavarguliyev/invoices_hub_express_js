@@ -12,7 +12,6 @@ import { GetQueryResultsArgs } from 'common/inputs/get-query-results.args';
 export const safelyInitializeService = async (serviceName: string, initializeFn: () => Promise<void>): Promise<void> => {
   try {
     await initializeFn();
-    LoggerTracerInfrastructure.log(`${serviceName} initialized successfully`, 'info');
   } catch (err: any) {
     LoggerTracerInfrastructure.log(`${serviceName} initialization failed: ${err?.message || 'An unknown error occurred'}`, 'error');
     throw err;

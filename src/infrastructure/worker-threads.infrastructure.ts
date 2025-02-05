@@ -16,6 +16,10 @@ class TaskHandler {
   private static heavyComputation (params: any): number {
     const total = params?.total ?? Number(process.env.HEAVY_COMPUTATION_TOTAL);
 
+    if (!Number.isFinite(total)) {
+      throw new Error(`Invalid "total" value: ${total} is not a valid number.`);
+    }
+
     return (total * (total - 1)) / 2;
   }
 }

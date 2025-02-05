@@ -31,6 +31,7 @@ export default class RedisInfrastructure {
 
   static async getHashKeys (key: string): Promise<string[]> {
     const client = ensureInitialized(RedisInfrastructure.client, Variables.REDIS_SERVICE);
+
     return await client?.sMembers(key);
   }
 
@@ -46,6 +47,7 @@ export default class RedisInfrastructure {
 
   static async setHashKeys (key: string, cacheKey: string) {
     const client = ensureInitialized(RedisInfrastructure.client, Variables.REDIS_SERVICE);
+
     await client?.sAdd(key, cacheKey);
   }
 
@@ -57,6 +59,7 @@ export default class RedisInfrastructure {
 
   static async deletekeys (keys: string[]) {
     const client = ensureInitialized(RedisInfrastructure.client, Variables.REDIS_SERVICE);
+
     if (keys.length) {
       await client.del(keys);
     }
@@ -77,15 +80,5 @@ export default class RedisInfrastructure {
 
   static async isConnected (): Promise<boolean> {
     return RedisInfrastructure.client ? RedisInfrastructure.client.isOpen : false;
-  }
-
-  static async mget (keys: string[]): Promise<Record<string, string | undefined>> {
-    const client = ensureInitialized(RedisInfrastructure.client, Variables.REDIS_SERVICE);
-    const values = await client.mGet(keys);
-
-    return keys.reduce((acc, key, i) => {
-      acc[key] = values[i] || undefined;
-      return acc;
-    }, {} as Record<string, string | undefined>);
   }
 }

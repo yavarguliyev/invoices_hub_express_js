@@ -27,7 +27,7 @@
 		"test:coverage": "jest --coverage",
 		"test:unit": "jest --testPathPattern=tests/unit",
 		"test:integration": "jest --testPathPattern=tests/integration",
-		"loadtest:dev": "npx loadtest -n 3500 -c 1500 -k http://localhost:3000/api/v1/healthcheck"
+		"loadtest:dev": "npx loadtest -n 3600 -c 1200 -k http://localhost:3000/api/v1/healthcheck"
 	},
 	"dependencies": {
 		"amqplib": "^0.10.5",

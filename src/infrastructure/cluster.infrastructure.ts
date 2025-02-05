@@ -25,7 +25,6 @@ export class ClusterInfrastructure {
         this.forkWorkers(numCPUs);
         handleProcessSignals(ClusterShutdownHelper.shutDownWorkers);
       } else {
-        LoggerTracerInfrastructure.log(`Worker process running: ${process.pid}`, 'info');
         this.spawnWorkerThread();
       }
     } catch (err: any) {
@@ -51,8 +50,8 @@ export class ClusterInfrastructure {
     }
 
     cluster.on('exit', (worker, code, signal) => {
-      LoggerTracerInfrastructure.log(`Worker ${worker.process.pid} died with code: ${code}, signal: ${signal}`, 'error');
-      if (code !== 0) {
+      if (code !== 0 || signal) {
+        LoggerTracerInfrastructure.log(`Worker ${worker.process.pid} crashed. Restarting... Code: ${code}, Signal: ${signal}`, 'error');
         cluster.fork();
       }
     });
@@ -63,10 +62,8 @@ export class ClusterInfrastructure {
     const worker = new Worker(workerPath);
 
     worker.on('message', (message) => {
-      if (message.success) {
-        LoggerTracerInfrastructure.log(`Worker Thread Result: ${message.result}`, 'info');
-      } else {
-        LoggerTracerInfrastructure.log(`Worker Thread Error: ${message.error}`, 'error');
+      if (!message.success) {
+        LoggerTracerInfrastructure.log(`Worker Thread Error: ${message.error || 'Unknown error occurred'}`, 'error');
       }
     });
 
