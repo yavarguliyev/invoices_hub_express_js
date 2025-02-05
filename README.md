@@ -389,6 +389,40 @@ yarn test:watch
 yarn test:coverage
 ```
 
+# 💻⚙️ PM2 Commands
+
+## View PM2 Status:
+
+#### To check the status of your application running under PM2, use the following command:
+
+```javascript
+yarn pm2:status
+```
+
+## Clean and Restart PM2:
+
+#### To stop all PM2 processes, clean up, and save the current process list:
+
+```javascript
+yarn pm2:clean
+```
+
+#### This will:
+
+* Delete all PM2 processes.
+* Save the PM2 process list.
+* Display the updated status.
+
+## Start the Application with PM2:
+
+#### To start your application using the ecosystem.config.js file, run:
+
+```javascript
+yarn pm2:dev
+```
+
+#### This will launch the application in cluster mode, as defined in your PM2 configuration.
+
 # 🏋️‍♂️ Load Testing
 
 ##### To check how many requests your application can handle, follow these steps:

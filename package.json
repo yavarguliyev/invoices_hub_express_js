@@ -27,6 +27,9 @@
 		"test:coverage": "jest --coverage",
 		"test:unit": "jest --testPathPattern=tests/unit",
 		"test:integration": "jest --testPathPattern=tests/integration",
+		"pm2:status": "pm2 status",
+		"pm2:clean": "pm2 delete all && pm2 save --force && pm2 status && yarn pm2:status",
+		"pm2:dev": "pm2 start ecosystem.config.js",
 		"loadtest:dev": "npx loadtest -n 3600 -c 1200 -k http://localhost:3000/api/v1/healthcheck"
 	},
 	"dependencies": {
