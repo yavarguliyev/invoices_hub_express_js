@@ -373,22 +373,6 @@ yarn start
 yarn test
 ```
 
-## Running Tests in Watch Mode:
-
-##### For continuous testing while developing, run:
-
-```javascript
-yarn test:watch
-```
-
-## Running Tests with Coverage Report:
-
-##### To generate a test coverage report, use:
-
-```javascript
-yarn test:coverage
-```
-
 # 💻⚙️ PM2 Commands
 
 ## View PM2 Status:
