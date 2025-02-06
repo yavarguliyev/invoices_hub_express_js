@@ -39,4 +39,8 @@ export class DbConnectionInfrastructure {
   static isConnected (): boolean {
     return !!this.dataSource?.isInitialized;
   }
+
+  static getDataSource (): DataSource | undefined {
+    return this.dataSource;
+  }
 }

@@ -21,7 +21,7 @@ export class RoleService implements IRoleService {
   }
 
   @RedisDecorator<RoleDto>({ keyTemplate: REDIS_CACHE_KEYS.ROLE_GET_LIST })
-  async get (query: GetQueryResultsArgs): Promise<ResponseResults<RoleDto>> {
+  async get (query: GetQueryResultsArgs) {
     const { payloads, total } = await queryResults(this.roleRepository, query, RoleDto);
 
     return { payloads, total, result: ResultMessage.SUCCEED };

@@ -175,15 +175,15 @@ export class CreateUsersRolesInvoicesAndOrdersTables1737788798120 implements Mig
         await queryRunner.query(`
             INSERT INTO "invoices" ("title", "amount", "description", "status", "approved_by_role", "user_id", "created_at", "updated_at")
             VALUES
-                ('Invoice #001', 100.50, 'Payment for services rendered', 'APPROVED', 
+                ('Invoice #1', 100.50, 'Payment for services rendered', 'paid', 
                     (SELECT id FROM "roles" WHERE name = 'Global Admin'), 
                     (SELECT id FROM "users" WHERE email = 'global_admin@example.com'), NOW(), NOW()),
-                ('Invoice #002', 250.00, 'Monthly subscription', 'PENDING', NULL, 
+                ('Invoice #2', 250.00, 'Monthly subscription', 'pending', NULL, 
                     (SELECT id FROM "users" WHERE email = 'admin@example.com'), NOW(), NOW()),
-                ('Invoice #003', 500.00, 'Project milestone payment', 'REJECTED', 
+                ('Invoice #3', 500.00, 'Project milestone payment', 'cancelled', 
                     (SELECT id FROM "roles" WHERE name = 'Contributor'), 
                     (SELECT id FROM "users" WHERE email = 'contributor@example.com'), NOW(), NOW()),
-                ('Invoice #004', 75.99, 'One-time fee', 'PENDING', NULL, 
+                ('Invoice #4', 75.99, 'One-time fee', 'pending', NULL, 
                     (SELECT id FROM "users" WHERE email = 'standard@example.com'), NOW(), NOW());
         `);
 

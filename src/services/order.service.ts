@@ -15,9 +15,12 @@ import { OrderStatus } from 'common/enums/order-status.enum';
 import { InvoiceStatus } from 'common/enums/invoice-status.enum';
 import { EventPublisherDecorator } from 'decorators/event.publisher.decorator';
 import { EVENTS } from 'common/enums/events.enum';
-import { IInvoiceService } from 'services/invoice.service';
-import { ContainerHelper } from 'ioc/helpers/container.helper';
-import { ContainerItems } from 'ioc/static/container-items';
+import User from 'entities/user.entity';
+import Order from 'entities/order.entity';
+import Invoice from 'entities/invoice.entity';
+import { BadRequestError, DatabaseConnectionError } from 'errors';
+import { DbConnectionInfrastructure } from 'infrastructure/db-connection.infrastructure';
+import { OrderApproveOrCancelArgs } from 'common/inputs/order-approve-or-cancel.args';
 
 export interface IOrderService {
   get (query: GetQueryResultsArgs): Promise<ResponseResults<OrderDto>>;
@@ -29,16 +32,14 @@ export interface IOrderService {
 export class OrderService implements IOrderService {
   private orderRepository: OrderRepository;
   private userRepository: UserRepository;
-  private invoiceService: IInvoiceService;
 
   constructor () {
     this.orderRepository = Container.get(OrderRepository);
     this.userRepository = Container.get(UserRepository);
-    this.invoiceService = ContainerHelper.get<IInvoiceService>(ContainerItems.IInvoiceService);
   }
 
   @RedisDecorator<OrderDto>({ keyTemplate: REDIS_CACHE_KEYS.ORDER_INVOICE_GET_LIST })
-  async get (query: GetQueryResultsArgs): Promise<ResponseResults<OrderDto>> {
+  async get (query: GetQueryResultsArgs) {
     const { payloads, total } = await queryResults(this.orderRepository, query, OrderDto);
 
     return { payloads, total, result: ResultMessage.SUCCEED };
@@ -60,27 +61,71 @@ export class OrderService implements IOrderService {
 
   @EventPublisherDecorator({ keyTemplate: REDIS_CACHE_KEYS.ORDER_INVOICE_GET_LIST, event: EVENTS.ORDER_APPROVED })
   async approveOrder ({ id }: UserDto, orderId: number) {
-    const currentUser = await this.userRepository.findOneByOrFail({ id });
-    const order = await this.orderRepository.findOneOrFail({ where: { id: orderId, status: OrderStatus.PENDING } });
-
-    await this.orderRepository.save({ ...order, status: OrderStatus.COMPLETED });
-    await this.invoiceService.create({ order, user: currentUser, status: InvoiceStatus.PAID });
-
-    // TODO: Notify the user with an email that includes an attachment for the invoice.
-
-    return { result: ResultMessage.SUCCEED };
+    return this.processOrderApproveOrCancel({
+      userId: id,
+      orderId,
+      newOrderStatus: OrderStatus.COMPLETED,
+      newInvoiceStatus: InvoiceStatus.PAID,
+      serviceName: 'orderService.approveOrder'
+    });
   }
 
   @EventPublisherDecorator({ keyTemplate: REDIS_CACHE_KEYS.ORDER_INVOICE_GET_LIST, event: EVENTS.ORDER_CANCELED })
   async cancelOrder ({ id }: UserDto, orderId: number) {
-    const currentUser = await this.userRepository.findOneByOrFail({ id });
-    const order = await this.orderRepository.findOneOrFail({ where: { id: orderId, status: OrderStatus.PENDING } });
+    return this.processOrderApproveOrCancel({
+      userId: id,
+      orderId,
+      newOrderStatus: OrderStatus.CANCELLED,
+      newInvoiceStatus: InvoiceStatus.CANCELLED,
+      serviceName: 'orderService.cancelOrder'
+    });
+  }
 
-    await this.orderRepository.save({ ...order, status: OrderStatus.CANCELLED });
-    await this.invoiceService.create({ order, user: currentUser, status: InvoiceStatus.CANCELLED });
+  private createInvoice (order: Order, user: User, status: InvoiceStatus) {
+    return {
+      title: `Invoice for Order #${order.id}`,
+      amount: order.totalAmount,
+      description: status === InvoiceStatus.CANCELLED ? 'Invoice generated for canceled order.' : 'Invoice generated for completed order.',
+      status,
+      order,
+      user,
+      approvedByRole: user.role
+    };
+  }
 
-    // TODO: Notify the user with an email that includes an attachment for the invoice.
+  private async processOrderApproveOrCancel (args: OrderApproveOrCancelArgs) {
+    const { userId, orderId, newOrderStatus, newInvoiceStatus, serviceName } = args;
 
-    return { result: ResultMessage.SUCCEED };
+    const dataSource = DbConnectionInfrastructure.getDataSource();
+    if (!dataSource) {
+      throw new DatabaseConnectionError({ service: serviceName });
+    }
+
+    const queryRunner = dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      const currentUser = await queryRunner.manager.findOneOrFail(User, { where: { id: userId } });
+      const order = await queryRunner.manager.findOneOrFail(Order, { where: { id: orderId, status: OrderStatus.PENDING } });
+
+      order.status = newOrderStatus;
+      await queryRunner.manager.save(order);
+
+      const invoiceData = this.createInvoice(order, currentUser, newInvoiceStatus);
+      const invoice = queryRunner.manager.create(Invoice, invoiceData);
+
+      await queryRunner.manager.save(invoice);
+      await queryRunner.commitTransaction();
+
+      // TODO: Notify the user with an email that includes an attachment for the invoice.
+
+      return { result: ResultMessage.SUCCEED };
+    } catch (error: any) {
+      await queryRunner.rollbackTransaction();
+      throw new BadRequestError(error?.message ?? 'DB operation failed');
+    } finally {
+      await queryRunner.release();
+    }
   }
 }

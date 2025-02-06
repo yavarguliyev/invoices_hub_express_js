@@ -40,13 +40,13 @@ export class UserService implements IUserService {
   }
 
   @RedisDecorator<UserDto>({ keyTemplate: REDIS_CACHE_KEYS.USER_GET_LIST })
-  async get (query: GetQueryResultsArgs): Promise<ResponseResults<UserDto>> {
+  async get (query: GetQueryResultsArgs) {
     const { payloads, total } = await queryResults(this.userRepository, query, UserDto, { RelatedDtoClass: RoleDto, relationField: 'role' });
 
     return { payloads, total, result: ResultMessage.SUCCEED };
   }
 
-  async getBy ({ id }: GetUserArgs): Promise<ResponseResults<UserDto>> {
+  async getBy ({ id }: GetUserArgs) {
     const user = await this.userRepository.findOne({ where: { id } });
 
     if (!user) {
@@ -62,7 +62,7 @@ export class UserService implements IUserService {
   }
 
   @EventPublisherDecorator({ keyTemplate: REDIS_CACHE_KEYS.USER_GET_LIST, event: EVENTS.USER_CREATED })
-  async create (userData: CreateUserArgs): Promise<ResponseResults<UserDto>> {
+  async create (userData: CreateUserArgs) {
     const { email, roleId } = userData;
 
     const existingUser = await this.userRepository.findOne({ where: { email }, withDeleted: true });
@@ -85,7 +85,7 @@ export class UserService implements IUserService {
   }
 
   @EventPublisherDecorator({ keyTemplate: REDIS_CACHE_KEYS.USER_GET_LIST, event: EVENTS.USER_UPDATED })
-  async update (id: number, userData: UpdateUserArgs): Promise<ResponseResults<UserDto>> {
+  async update (id: number, userData: UpdateUserArgs) {
     const userToBeUpdated = await this.userRepository.findOneBy({ id });
     if (!userToBeUpdated) {
       throw new NotFoundError(`User with ID ${id} not found.`, { id });
@@ -107,7 +107,7 @@ export class UserService implements IUserService {
   }
 
   @EventPublisherDecorator({ keyTemplate: REDIS_CACHE_KEYS.USER_GET_LIST, event: EVENTS.USER_PASSWORD_UPDATED })
-  async updatePassword (id: number, updatePasswordArgs: UpdateUserPasswordArgs): Promise<ResponseResults<UserDto>> {
+  async updatePassword (id: number, updatePasswordArgs: UpdateUserPasswordArgs) {
     const { currentPassword, password, confirmPassword } = updatePasswordArgs;
 
     const userToBeUpdated = await this.userRepository.findOneBy({ id });
@@ -131,7 +131,7 @@ export class UserService implements IUserService {
   }
 
   @EventPublisherDecorator({ keyTemplate: REDIS_CACHE_KEYS.USER_GET_LIST, event: EVENTS.USER_DELETED })
-  async delete ({ id }: DeleteUserArgs): Promise<ResponseResults<UserDto>> {
+  async delete ({ id }: DeleteUserArgs) {
     const existingUser = await this.userRepository.findOne({ where: { id } });
     if (!existingUser) {
       throw new NotFoundError(`User with ID ${id} not found.`, { id });

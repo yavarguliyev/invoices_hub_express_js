@@ -8,8 +8,6 @@ export interface IHealthcheckService {
 }
 
 export class HealthcheckService implements IHealthcheckService {
-  constructor () {}
-
   async healthcheck (): Promise<HealthcheckResponse> {
     const services = {
       db: DbConnectionInfrastructure.isConnected(),

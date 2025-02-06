@@ -301,7 +301,7 @@ yarn mup
 ##### Revert migrations:
 
 ```javascript
-yarn migrations:revert
+yarn mdn
 ```
 
 ##### Copy the .env.example file to .env and fill in the appropriate values for your environment.

@@ -22,7 +22,7 @@ export class AuthService implements IAuthService {
     this.userRepository = Container.get(UserRepository);
   }
 
-  async signin (args: SigninArgs): Promise<LoginResponse> {
+  async signin (args: SigninArgs) {
     const { email, password } = args;
     const user = await this.userRepository.findOne({ where: { email } });
     if (!user) {
@@ -37,7 +37,7 @@ export class AuthService implements IAuthService {
     return await this.generateLoginResponse({ id: user.id, email });
   }
 
-  async signout (accesToken: string): Promise<boolean> {
+  async signout (accesToken: string) {
     const token = accesToken?.split(' ')[1] ?? '';
     const decoded = jwt.decode(token) as JwtPayload;
 
