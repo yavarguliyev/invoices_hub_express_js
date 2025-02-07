@@ -11,7 +11,6 @@ import { ExpressServerInfrastructure } from 'infrastructure/express-server.infra
 import { ErrorHandlerMiddleware } from 'middlewares/error-handler.middleware';
 import { registerService } from 'helpers/utility-functions.helper';
 import { DbConnectionInfrastructure } from 'infrastructure/db-connection.infrastructure';
-import { LoggerTracerInfrastructure } from 'infrastructure/logger-tracer.infrastructure';
 import { InvoicesController } from 'controllers/v1/invoices.controller';
 import { AuthController } from 'controllers/v1/auth.controller';
 import { AuthService } from 'services/auth.service';
@@ -37,24 +36,18 @@ export function configureContainers () {
 };
 
 export async function configureRepositories () {
-  try {
-    const dataSource = await DbConnectionInfrastructure.create();
-    await dataSource.initialize();
+  const dataSource = await DbConnectionInfrastructure.create();
+  await dataSource.initialize();
 
-    if (dataSource.isInitialized) {
-      const invoiceRepository = dataSource.getRepository(Invoice);
-      const orderRepository = dataSource.getRepository(Order);
-      const roleRepository = dataSource.getRepository(Role);
-      const userRepository = dataSource.getRepository(User);
+  const invoiceRepository = dataSource.getRepository(Invoice);
+  const orderRepository = dataSource.getRepository(Order);
+  const roleRepository = dataSource.getRepository(Role);
+  const userRepository = dataSource.getRepository(User);
 
-      Container.set(InvoiceRepository, invoiceRepository);
-      Container.set(OrderRepository, orderRepository);
-      Container.set(RoleRepository, roleRepository);
-      Container.set(UserRepository, userRepository);
-    }
-  } catch (error) {
-    LoggerTracerInfrastructure.log(`Error initializing data source: ${error}`, 'error');
-  }
+  Container.set(InvoiceRepository, invoiceRepository);
+  Container.set(OrderRepository, orderRepository);
+  Container.set(RoleRepository, roleRepository);
+  Container.set(UserRepository, userRepository);
 };
 
 export function configureInfrastructures () {

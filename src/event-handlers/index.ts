@@ -6,7 +6,7 @@ import { LoggerTracerInfrastructure } from 'infrastructure/logger-tracer.infrast
 
 export const initializeSubscribers = async () => {
   try {
-    const subscriptions = await Promise.all([
+    await Promise.all([
       RabbitMQInfrastructure.subscribe(EVENTS.USER_CREATED, handleNewUserCreated),
       RabbitMQInfrastructure.subscribe(EVENTS.USER_UPDATED, handleUserUpdated),
       RabbitMQInfrastructure.subscribe(EVENTS.USER_PASSWORD_UPDATED, handleUserPasswordUpdated),
@@ -15,8 +15,6 @@ export const initializeSubscribers = async () => {
       RabbitMQInfrastructure.subscribe(EVENTS.ORDER_APPROVED, handleOrderApprove),
       RabbitMQInfrastructure.subscribe(EVENTS.ORDER_CANCELED, handleOrderCancel)
     ]);
-
-    LoggerTracerInfrastructure.log(`Successfully initialized ${subscriptions.length} subscribers`, 'info');
   } catch (error) {
     LoggerTracerInfrastructure.log(`Error initializing subscriptions: ${error}`, 'error');
   }
