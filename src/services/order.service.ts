@@ -13,7 +13,7 @@ import { CreateOrderArgs } from 'common/inputs/create-order.args';
 import { UserRepository } from 'repositories/user.repository';
 import { OrderStatus } from 'common/enums/order-status.enum';
 import { InvoiceStatus } from 'common/enums/invoice-status.enum';
-import { EventPublisherDecorator } from 'decorators/event.publisher.decorator';
+import { EventPublisherDecorator } from 'decorators/event-publisher.decorator';
 import { EVENTS } from 'common/enums/events.enum';
 import User from 'entities/user.entity';
 import Order from 'entities/order.entity';

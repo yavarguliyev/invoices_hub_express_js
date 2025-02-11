@@ -5,9 +5,13 @@ import { LoggerTracerInfrastructure } from 'infrastructure/logger-tracer.infrast
 import RedisInfrastructure from 'infrastructure/redis.infrastructure';
 import RabbitMQInfrastructure from 'infrastructure/rabbitmq.infrastructure';
 import { DbConnectionInfrastructure } from 'infrastructure/db-connection.infrastructure';
+import { WorkerThreadsInfrastructure } from 'infrastructure/worker-threads.infrastructure';
+import { RetryHelper } from 'helpers/retry.helper';
 
 export class ClusterShutdownHelper {
-  static shutdownTimeout = Number(process.env.SHUT_DOWN_TIMER);
+  private static readonly shutdownTimeout = Number(process.env.SHUT_DOWN_TIMER);
+  private static readonly maxRetries = Number(process.env.SHUTDOWN_RETRIES);
+  private static readonly retryDelay = Number(process.env.SHUTDOWN_RETRY_DELAY);
 
   static async shutDown (httpServer: http.Server): Promise<void> {
     let shutdownTimer;
@@ -20,8 +24,9 @@ export class ClusterShutdownHelper {
       await this.disconnectServices();
 
       if (cluster.isPrimary) {
-        await this.shutDownWorkerThreads();
-        await this.shutDownWorkers();
+        await this.shutdownWorkers();
+      } else {
+        WorkerThreadsInfrastructure.shutdownWorkers();
       }
 
       shutdownTimer = this.startShutdownTimer();
@@ -36,7 +41,7 @@ export class ClusterShutdownHelper {
     }
   }
 
-  static async shutDownWorkers (): Promise<void> {
+  static async shutdownWorkers (): Promise<void> {
     const workers = Object.values(cluster.workers || {});
 
     for (const worker of workers) {
@@ -48,48 +53,22 @@ export class ClusterShutdownHelper {
     }
   }
 
-  static async shutDownWorkerThreads (): Promise<void> {
-    const workers = Object.values(cluster.workers || {});
-
-    for (const worker of workers) {
-      if (worker) {
-        worker.send({ action: 'shutdown' });
-        worker.on('exit', (code) => LoggerTracerInfrastructure.log(`Worker thread exited with code: ${code}`, 'info'));
-      }
-    }
-  }
-
   private static async disconnectServices (): Promise<void> {
-    const services = [
-      this.disconnectWithRetry(RedisInfrastructure.disconnect),
-      this.disconnectWithRetry(RabbitMQInfrastructure.disconnect),
-      this.disconnectWithRetry(DbConnectionInfrastructure.disconnect)
+    const disconnectPromises = [
+      RetryHelper.executeWithRetry(() => RedisInfrastructure.disconnect(), 'Redis', this.maxRetries, this.retryDelay),
+      RetryHelper.executeWithRetry(() => RabbitMQInfrastructure.disconnect(), 'RabbitMQ', this.maxRetries, this.retryDelay),
+      RetryHelper.executeWithRetry(() => DbConnectionInfrastructure.disconnect(), 'Database', this.maxRetries, this.retryDelay)
     ];
 
-    await Promise.all(services.map(p => p.catch(err => LoggerTracerInfrastructure.log(`Service shutdown error: ${err}`, 'error'))));
-  }
-
-  private static async disconnectWithRetry (disconnectFn: Function, retries = 3, delay = 1000): Promise<void> {
-    for (let attempt = 1; attempt <= retries; attempt++) {
-      try {
-        await disconnectFn();
-        return;
-      } catch (err) {
-        if (attempt === retries) {
-          throw err;
-        }
-
-        LoggerTracerInfrastructure.log(`Error during service shutdown, retrying... Attempt ${attempt}`, 'error');
-        await this.delay(delay);
-      }
+    try {
+      await Promise.all(disconnectPromises);
+    } catch (err) {
+      LoggerTracerInfrastructure.log(`Service disconnection failed: ${err}`, 'error');
+      throw err;
     }
   }
 
-  private static delay (ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
-  }
-
-  private static startShutdownTimer () {
+  static startShutdownTimer () {
     return setTimeout(() => {
       LoggerTracerInfrastructure.log('Shutdown timeout reached, forcing process exit', 'error');
       process.exit(1);

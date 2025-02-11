@@ -17,7 +17,7 @@
 9. Project Structure
 10. API Documentation
 11. Running the Application
-12. Running Tests (TODO list)
+12. Running Tests
 13. Usage
 14. Contributing
 15. License

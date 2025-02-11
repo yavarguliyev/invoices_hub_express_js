@@ -1,34 +1,56 @@
-import { parentPort } from 'worker_threads';
+import { Worker } from 'worker_threads';
+import path from 'path';
+import { config } from 'dotenv';
 
-import { WorkerThreadsTask } from 'common/types/worker-threads-task.type';
+import { LoggerTracerInfrastructure } from 'infrastructure/logger-tracer.infrastructure';
 import { WorkerThreadsOperations } from 'common/enums/worker-threads-operations.enum';
+import { WorkerThreadsTask } from 'common/types/worker-threads-task.type';
 
-class TaskHandler {
-  static async execute (task: WorkerThreadsTask): Promise<any> {
-    switch (task.name) {
-      case WorkerThreadsOperations.HEAVY_COMPUTATION:
-        return TaskHandler.heavyComputation(task.params);
-      default:
-        throw new Error(`Unknown task: ${task.name}`);
-    }
+config();
+
+export class WorkerThreadsInfrastructure {
+  static workerPool: Worker[] = [];
+  private static numThreads = Number(process.env.THREAD_WORKERS);
+  private static totalTasks = Number(process.env.HEAVY_COMPUTATION_TOTAL);
+  private static workerFile = path.resolve(__dirname, process.env.WORKER_FILE_DIRECTION);
+
+  static createWorker (): Worker {
+    const worker = new Worker(this.workerFile);
+    this.workerPool.push(worker);
+    return worker;
   }
 
-  private static heavyComputation (params: any): number {
-    const total = params?.total ?? Number(process.env.HEAVY_COMPUTATION_TOTAL);
+  private static async spawnWorkerThread (task: WorkerThreadsTask): Promise<any> {
+    return new Promise((resolve, reject) => {
+      const worker = this.workerPool.pop() || this.createWorker();
 
-    if (!Number.isFinite(total)) {
-      throw new Error(`Invalid "total" value: ${total} is not a valid number.`);
-    }
+      worker.once('message', (message) => {
+        message.success ? resolve(message.result) : reject(new Error(message.error || 'Unknown error occurred'));
+        this.workerPool.push(worker);
+      });
 
-    return (total * (total - 1)) / 2;
+      worker.once('error', (error) => {
+        LoggerTracerInfrastructure.log(`Worker thread error: ${error}`, 'error');
+        reject(error);
+        worker.terminate();
+      });
+
+      worker.postMessage(task);
+    });
+  }
+
+  static async executeHeavyTask (): Promise<any> {
+    const total = Math.ceil(this.totalTasks / this.numThreads);
+    const tasks = Array.from({ length: this.numThreads }).map(() =>
+      this.spawnWorkerThread({ name: WorkerThreadsOperations.HEAVY_COMPUTATION, params: { total } })
+    );
+
+    return Promise.all(tasks);
+  }
+
+  static shutdownWorkers (): void {
+    LoggerTracerInfrastructure.log('Shutting down all worker threads...', 'info');
+    this.workerPool.forEach(worker => worker.terminate());
+    this.workerPool = [];
   }
 }
-
-parentPort?.on('message', async (task: WorkerThreadsTask) => {
-  try {
-    const result = await TaskHandler.execute(task);
-    parentPort?.postMessage({ success: true, result });
-  } catch (error) {
-    parentPort?.postMessage({ success: false, error: error instanceof Error ? error.message : 'Unknown error' });
-  }
-});

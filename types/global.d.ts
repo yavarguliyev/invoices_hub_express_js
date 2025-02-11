@@ -3,13 +3,18 @@ declare namespace NodeJS {
     // app configs
     PORT: string;
     NODE_ENV: string;
+    KEEP_ALIVE_TIMEOUT: string;
+    HEADERS_TIMEOUT: string;
     SERVER_TIMEOUT: string;
     JWT_SECRET_KEY: string;
     JWT_EXPIRES_IN: string;
     PASSPORT_JS_SESSION_SECRET_KEY: string;
     CLUSTER_WORKERS: string;
+    THREAD_WORKERS: string;
     SHUT_DOWN_TIMER: string;
-    SHUT_HEAVY_COMPUTATION_TOTALDOWN_TIMER: string;
+    SHUTDOWN_RETRIES: string;
+    SHUTDOWN_RETRY_DELAY: string;
+    HEAVY_COMPUTATION_TOTAL: string;
     WORKER_FILE_DIRECTION: string;
 
     PASSWORD_UPPERCASE: string;

@@ -5,7 +5,7 @@ import bcrypt from 'bcrypt';
 import { EVENTS } from 'common/enums/events.enum';
 import { REDIS_CACHE_KEYS } from 'common/types/decorator.types';
 import { RedisDecorator } from 'decorators/redis.decorator';
-import { EventPublisherDecorator } from 'decorators/event.publisher.decorator';
+import { EventPublisherDecorator } from 'decorators/event-publisher.decorator';
 import { UserRepository } from 'repositories/user.repository';
 import { RoleRepository } from 'repositories/role.repository';
 import { GetUserArgs } from 'common/inputs/get-user.args';

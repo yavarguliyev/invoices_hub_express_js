@@ -18,8 +18,8 @@ config();
 
 const initializeDependencyInjections = async (): Promise<void> => {
   configureContainers();
-  await configureRepositories();
   configureInfrastructures();
+  await configureRepositories();
   configureMiddlewares();
   configureControllersAndServices();
 };
@@ -32,7 +32,12 @@ const initializeInfrastructureServices = async (): Promise<void> => {
 
 const initializeServer = async (): Promise<http.Server> => {
   const app = await Container.get(ExpressServerInfrastructure).get();
-  return http.createServer(app);
+  const server = http.createServer(app);
+
+  server.keepAliveTimeout = Number(process.env.KEEP_ALIVE_TIMEOUT);
+  server.headersTimeout = Number(process.env.HEADERS_TIMEOUT);
+
+  return server;
 };
 
 const startServer = (httpServer: http.Server, port: number): void => {

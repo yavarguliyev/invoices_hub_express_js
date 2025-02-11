@@ -31,8 +31,9 @@ export default class RedisInfrastructure {
 
   static async getHashKeys (key: string): Promise<string[]> {
     const client = ensureInitialized(RedisInfrastructure.client, Variables.REDIS_SERVICE);
+    const keys = await client?.sMembers(key);
 
-    return await client?.sMembers(key);
+    return keys || [];
   }
 
   static async set (key: string, value: string, ttl?: number): Promise<void> {
@@ -66,7 +67,7 @@ export default class RedisInfrastructure {
   }
 
   static async disconnect (): Promise<void> {
-    if (!RedisInfrastructure.client) {
+    if (!RedisInfrastructure.client || !RedisInfrastructure.client.isOpen) {
       return;
     }
 
