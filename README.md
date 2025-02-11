@@ -311,31 +311,18 @@ yarn mdn
 # 📂 Project Structure
 
 ```javascript
-/migrations
-├── /{{migrations_scripts}}.ts
+/dist                  # Compiled output of the TypeScript compilation process
+/migrations            # Database migrations
 /src
-├── /controllers
-│   ├── user.controller.ts
-│   ├── order.controller.ts
-│   └── ...
-├── /services
-│   ├── user.service.ts
-│   ├── order.service.ts
-│   └── ...
-├── /entities
-│   ├── users.model.ts
-│   ├── orders.model.ts
-│   └── ...
-├── /repositories
-│   ├── user.repository.ts
-│   ├── order.repository.ts
-│   └── ...
-├── /middlewares
-│   ├── error.middleware.ts
-├── data-source.ts
-├── index.ts.ts
-/tests
-│   ├── 
+├── /api               # Contains controllers for different endpoints
+├── /application       # Contains application-specific services or use cases
+├── /core              # Contains the core logic of the application
+├── /domain            # Contains domain models (entities) and related logic
+├── /infrastructure    # Contains infrastructure-specific files
+├── data-source.ts     # Data source configuration for migrations
+├── index.ts.ts        # Main entry point of the application
+/tests                 # Contains test files (unit and integration tests)
+/types                 # This directory contains any custom type definitions
 └── README.md
 ```
 

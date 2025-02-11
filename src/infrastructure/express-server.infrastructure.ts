@@ -6,17 +6,17 @@ import swaggerUi from 'swagger-ui-express';
 import session from 'express-session';
 import passport from 'passport';
 
-import { HealthcheckController } from 'controllers/v1/healthcheck.controller';
-import { UsersController } from 'controllers/v1/users.controller';
-import { ErrorHandlerMiddleware } from 'middlewares/error-handler.middleware';
-import { AuthController } from 'controllers/v1/auth.controller';
-import { InvoicesController } from 'controllers/v1/invoices.controller';
-import { RolesController } from 'controllers/v1/roles.controller';
-import { OrdersController } from 'controllers/v1/orders.controller';
+import { HealthcheckController } from 'api/v1/healthcheck.controller';
+import { UsersController } from 'api/v1/users.controller';
+import { ErrorHandlerMiddleware } from 'core/middlewares/error-handler.middleware';
+import { AuthController } from 'api/v1/auth.controller';
+import { InvoicesController } from 'api/v1/invoices.controller';
+import { RolesController } from 'api/v1/roles.controller';
+import { OrdersController } from 'api/v1/orders.controller';
 import { AuthStrategiesInfrastructure } from 'infrastructure/auth-strategies.infrastructure';
-import { authorizationChecker, currentUserChecker } from 'helpers/authorization-checker.helper';
-import { getSchemasList } from 'helpers/swagger-schemas.helper';
-import { HelmetMiddleware } from 'middlewares/helmet.middleware';
+import { authorizationChecker, currentUserChecker } from 'application/helpers/authorization-checker.helper';
+import { getSchemasList } from 'application/helpers/swagger-schemas.helper';
+import { HelmetMiddleware } from 'core/middlewares/helmet.middleware';
 
 export interface IExpressServerInfrastructure {
   get(): Promise<Express>;

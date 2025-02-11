@@ -15,10 +15,10 @@ jest.mock('typeorm', () => {
   };
 });
 
-jest.mock('../src/entities/invoice.entity', () => ({}));
-jest.mock('../src/entities/order.entity', () => ({}));
-jest.mock('../src/entities/role.entity', () => ({}));
-jest.mock('../src/entities/user.entity', () => ({}));
+jest.mock('../src/domain/entities/invoice.entity', () => ({}));
+jest.mock('../src/domain/entities/order.entity', () => ({}));
+jest.mock('../src/domain/entities/role.entity', () => ({}));
+jest.mock('../src/domain/entities/user.entity', () => ({}));
 
 describe('AppDataSource', () => {
   beforeEach(() => {
@@ -27,7 +27,6 @@ describe('AppDataSource', () => {
 
   test('should be defined', () => {
     expect(AppDataSource).toBeDefined();
-    console.log(`DataSource called times: ${(DataSource as jest.Mock).mock.calls.length}`);
     expect(DataSource).toHaveBeenCalledTimes(0);
   });
 
@@ -37,7 +36,6 @@ describe('AppDataSource', () => {
   });
 
   test('should destroy the database connection', async () => {
-    (AppDataSource as any).isInitialized = true;
     await AppDataSource.destroy();
     expect(AppDataSource.destroy).toHaveBeenCalledTimes(1);
   });

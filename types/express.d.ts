@@ -1,4 +1,4 @@
-import { WithExpressContext } from '../src/common/interfaces/express-context.interface';
+import { WithExpressContext } from '../src/domain/interfaces/express-context.interface';
 
 declare global {
   namespace Express {

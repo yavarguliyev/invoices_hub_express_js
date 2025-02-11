@@ -1,8 +1,8 @@
 import cluster from 'cluster';
 
 import { LoggerTracerInfrastructure } from 'infrastructure/logger-tracer.infrastructure';
-import { ClusterShutdownHelper } from 'helpers/cluster-shutdown.helper';
-import { handleProcessSignals } from 'helpers/utility-functions.helper';
+import { ClusterShutdownHelper } from 'application/helpers/cluster-shutdown.helper';
+import { handleProcessSignals } from 'application/helpers/utility-functions.helper';
 import { WorkerThreadsInfrastructure } from 'infrastructure/worker-threads.infrastructure';
 
 export class ClusterInfrastructure {

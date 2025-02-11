@@ -1,10 +1,10 @@
 import 'reflect-metadata';
 import { DataSource, DataSourceOptions } from 'typeorm';
 
-import Invoice from 'entities/invoice.entity';
-import Oder from 'entities/order.entity';
-import Role from 'entities/role.entity';
-import User from 'entities/user.entity';
+import Invoice from 'domain/entities/invoice.entity';
+import Oder from 'domain/entities/order.entity';
+import Role from 'domain/entities/role.entity';
+import User from 'domain/entities/user.entity';
 
 export class DbConnectionInfrastructure {
   private static dataSource?: DataSource;

@@ -3,8 +3,8 @@ import path from 'path';
 import { config } from 'dotenv';
 
 import { LoggerTracerInfrastructure } from 'infrastructure/logger-tracer.infrastructure';
-import { WorkerThreadsOperations } from 'common/enums/worker-threads-operations.enum';
-import { WorkerThreadsTask } from 'common/types/worker-threads-task.type';
+import { WorkerThreadsOperations } from 'domain/enums/worker-threads-operations.enum';
+import { WorkerThreadsTask } from 'core/types/worker-threads-task.type';
 
 config();
 

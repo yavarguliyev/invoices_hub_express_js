@@ -1,8 +1,8 @@
 import { Strategy } from 'passport-jwt';
 
-import { BaseAuthStrategy } from 'helpers/auth-strategies.helper.ts/base-auth-strategy';
-import { JwtAuthStrategy } from 'helpers/auth-strategies.helper.ts/jwt-auth-strategy';
-import AuthStrategyType from 'common/types/auth-strategies.type';
+import { BaseAuthStrategy } from 'application/helpers/auth-strategies.helper.ts/base-auth-strategy';
+import { JwtAuthStrategy } from 'application/helpers/auth-strategies.helper.ts/jwt-auth-strategy';
+import AuthStrategyType from 'core/types/auth-strategies.type';
 
 export class AuthStrategiesInfrastructure {
   private static strategyInstances: Record<AuthStrategyType, BaseAuthStrategy> = {

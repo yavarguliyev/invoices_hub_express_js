@@ -1,7 +1,7 @@
 import { parentPort } from 'worker_threads';
 
-import { WorkerThreadsTask } from 'common/types/worker-threads-task.type';
-import { WorkerThreadsOperations } from 'common/enums/worker-threads-operations.enum';
+import { WorkerThreadsTask } from 'core/types/worker-threads-task.type';
+import { WorkerThreadsOperations } from 'domain/enums/worker-threads-operations.enum';
 
 class WorkersInfrastructureTaskHandler {
   private static taskExecutors: Record<WorkerThreadsOperations, (params: any) => any> = {

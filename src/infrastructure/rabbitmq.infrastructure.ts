@@ -1,7 +1,7 @@
 import { connect, Channel, Connection, ConsumeMessage } from 'amqplib';
 
-import { safelyInitializeService, getEnvVariable, ensureInitialized } from 'helpers/utility-functions.helper';
-import { Variables } from 'common/enums/variables.enum';
+import { safelyInitializeService, getEnvVariable, ensureInitialized } from 'application/helpers/utility-functions.helper';
+import { Variables } from 'domain/enums/variables.enum';
 import { LoggerTracerInfrastructure } from 'infrastructure/logger-tracer.infrastructure';
 
 export default class RabbitMQInfrastructure {

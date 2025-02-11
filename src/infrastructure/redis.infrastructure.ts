@@ -1,8 +1,8 @@
 import { createClient, RedisClientType } from 'redis';
 
 import { LoggerTracerInfrastructure } from 'infrastructure/logger-tracer.infrastructure';
-import { safelyInitializeService, getEnvVariable, ensureInitialized } from 'helpers/utility-functions.helper';
-import { Variables } from 'common/enums/variables.enum';
+import { safelyInitializeService, getEnvVariable, ensureInitialized } from 'application/helpers/utility-functions.helper';
+import { Variables } from 'domain/enums/variables.enum';
 
 export default class RedisInfrastructure {
   private static client: RedisClientType | undefined = undefined;

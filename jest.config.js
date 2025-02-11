@@ -5,7 +5,7 @@ module.exports = {
     '^.+\\.tsx?$': 'ts-jest',
   },
   moduleNameMapper: {
-    '^entities/(.*)$': '<rootDir>/src/entities/$1',
+    '^domain/entities/(.*)$': '<rootDir>/src/domain/entities/$1',
     '^infrastructure/(.*)$': '<rootDir>/src/infrastructure/$1',
   }
 };

@@ -1,9 +1,9 @@
 import { Service } from 'typedi';
 import { MigrationInterface, QueryRunner, Table, TableForeignKey, TableIndex } from 'typeorm';
 
-import { Entities } from '../src/common/enums/entities.enum';
-import { InvoiceStatus } from '../src/common/enums/invoice-status.enum';
-import { OrderStatus } from '../src/common/enums/order-status.enum';
+import { Entities } from '../src/domain/enums/entities.enum';
+import { InvoiceStatus } from '../src/domain/enums/invoice-status.enum';
+import { OrderStatus } from '../src/domain/enums/order-status.enum';
 
 @Service()
 export class CreateUsersRolesInvoicesAndOrdersTables1737788798120 implements MigrationInterface {
