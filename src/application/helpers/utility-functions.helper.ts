@@ -39,10 +39,6 @@ export const handleProcessSignals = (shutdownCallback: (...args: any[]) => Promi
   ['SIGINT', 'SIGTERM'].forEach(signal => process.on(signal, async () => await shutdownCallback(...callbackArgs)));
 };
 
-export const logWorkerStatus = (message: string, pid: number): void => {
-  LoggerTracerInfrastructure.log(`${message}: ${pid}`, 'info');
-};
-
 export const registerService = <T> (id: string, service: Constructable<T>, isSingleton: boolean = true): void => {
   if (isSingleton) {
     ContainerHelper.addSingleton<T>(id, service);
@@ -75,25 +71,38 @@ export const compareValues = <T> (a: T, b: T, key: keyof T, sortOrder: SortOrder
 };
 
 export const queryResults = async <T extends Record<string, any>, DTO extends Record<string, any>, RelatedDTO extends Record<string, any>> (
-  repository: Repository<T>, query: GetQueryResultsArgs, dtoClass: new () => DTO, relatedEntity?: { RelatedDtoClass: new () => RelatedDTO, relationField: string }
-): Promise<{ payloads: DTO[], total: number }> => {
+  repository: Repository<T>, query: GetQueryResultsArgs, dtoClass: new () => DTO,
+  relatedEntity?: { RelatedDtoClass: new () => RelatedDTO; relationField: keyof T; }
+): Promise<{ payloads: DTO[]; total: number }> => {
   const { page = 1, limit = 10, filters = {}, order = {} } = query;
+  const [orderField, orderDirection] = Object.entries(order)[0] ?? ['id', 'DESC'];
+
   const offset = (page - 1) * limit;
+  const queryBuilder = repository.createQueryBuilder('entity');
 
-  const [items, total] = await repository.findAndCount({ where: filters, order, take: limit, skip: offset });
+  if (Object.keys(filters).length) {
+    queryBuilder.where(Object.entries(filters).map(([key]) => `entity.${key} = :${key}`).join(' AND '), filters);
+  }
 
-  const dtos = await Promise.all(
-    items.map(async (item) => {
-      const relationDto = relatedEntity?.relationField ? await item[relatedEntity.relationField] : undefined;
-      const dto = plainToInstance(dtoClass, item, { excludeExtraneousValues: true });
+  queryBuilder.addOrderBy(`entity.${orderField}`, orderDirection).take(limit).skip(offset);
 
-      if (relationDto && relatedEntity?.RelatedDtoClass) {
-        (dto as Record<string, any>)[relatedEntity.relationField] = plainToInstance(relatedEntity.RelatedDtoClass, relationDto, { excludeExtraneousValues: true });
-      }
+  let relationAlias: string | undefined;
+  if (relatedEntity?.relationField) {
+    relationAlias = `__${String(relatedEntity.relationField)}__`;
+    queryBuilder.leftJoinAndSelect(`entity.${String(relatedEntity.relationField)}`, relationAlias);
+  }
 
-      return dto;
-    })
-  ) as DTO[];
+  const [items, total] = await queryBuilder.getManyAndCount();
+
+  const dtos: DTO[] = items.map((item) => {
+    const dto = plainToInstance(dtoClass, item, { excludeExtraneousValues: true }) as Record<string, any>;
+
+    if (relatedEntity?.relationField && relationAlias && item[relationAlias]) {
+      dto[relatedEntity.relationField as string] = plainToInstance(relatedEntity.RelatedDtoClass, item[relationAlias], { excludeExtraneousValues: true });
+    }
+
+    return dto;
+  }) as DTO[];
 
   return { payloads: dtos, total };
 };

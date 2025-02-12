@@ -1,4 +1,4 @@
-import { IsPositive, IsOptional } from 'class-validator';
+import { IsPositive, IsOptional, IsObject } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class GetQueryResultsArgs {
@@ -13,12 +13,12 @@ export class GetQueryResultsArgs {
     limit: number = 10;
 
     @IsOptional()
-    @IsPositive()
-    @Type(() => Number)
-    filters?: number = 10;
+    @IsObject()
+    @Type(() => Object)
+    filters: Record<string, any> = {};
 
     @IsOptional()
-    @IsPositive()
-    @Type(() => Number)
-    order?: number = 10;
+    @IsObject()
+    @Type(() => Object)
+    order: Record<string, 'ASC' | 'DESC'> = {};
 }

@@ -1,6 +1,7 @@
 import { Container } from 'typedi';
 import { plainToInstance } from 'class-transformer';
 import bcrypt from 'bcrypt';
+import DataLoader from 'dataloader';
 
 import { EVENTS } from 'domain/enums/events.enum';
 import { REDIS_CACHE_KEYS } from 'core/types/decorator.types';
@@ -20,6 +21,7 @@ import { RoleDto } from 'domain/dto/role.dto';
 import { GetQueryResultsArgs } from 'core/inputs/get-query-results.args';
 import { generateStrongPassword, queryResults } from 'application/helpers/utility-functions.helper';
 import { UpdateUserPasswordArgs } from 'core/inputs/update-user-password.args';
+import { DataLoaderInfrastructure } from 'infrastructure/data-loader.infrastructure';
 
 export interface IUserService {
   get (query: GetQueryResultsArgs): Promise<ResponseResults<UserDto>>;
@@ -34,29 +36,32 @@ export class UserService implements IUserService {
   private userRepository: UserRepository;
   private roleRepository: RoleRepository;
 
+  private userLoader: DataLoader<number, UserDto>;
+
   constructor () {
     this.userRepository = Container.get(UserRepository);
     this.roleRepository = Container.get(RoleRepository);
+
+    this.userLoader = DataLoaderInfrastructure.getDataLoader({
+      entity: UserRepository,
+      relations: [{ relation: 'role', relationDto: RoleDto }],
+      repository: this.userRepository,
+      dto: UserDto
+    });
   }
 
   @RedisDecorator<UserDto>({ keyTemplate: REDIS_CACHE_KEYS.USER_GET_LIST })
   async get (query: GetQueryResultsArgs) {
-    const { payloads, total } = await queryResults(this.userRepository, query, UserDto, { RelatedDtoClass: RoleDto, relationField: 'role' });
+    const { payloads, total } = await queryResults(this.userRepository, query, UserDto, {
+      RelatedDtoClass: RoleDto,
+      relationField: 'role'
+    });
 
     return { payloads, total, result: ResultMessage.SUCCEED };
   }
 
   async getBy ({ id }: GetUserArgs) {
-    const user = await this.userRepository.findOne({ where: { id } });
-
-    if (!user) {
-      throw new NotFoundError(`User with ID ${id} not found.`, { id });
-    }
-
-    const role = await user.role;
-
-    const userDto = plainToInstance(UserDto, user, { excludeExtraneousValues: true }) as UserDto;
-    userDto.role = plainToInstance(RoleDto, role, { excludeExtraneousValues: true });
+    const userDto = await this.userLoader.load(id);
 
     return { payload: userDto, result: ResultMessage.SUCCEED };
   }
