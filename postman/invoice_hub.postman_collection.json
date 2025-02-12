@@ -101,7 +101,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"email\": \"john_3.doe@example.com\"\n}\n",
+							"raw": "{\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"email\": \"john.doe10@example.com\"\n}\n",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -270,11 +270,12 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{URL}}api/v1/users/4",
+							"raw": "{{URL}}/api/v1/users/4",
 							"host": [
-								"{{URL}}api"
+								"{{URL}}"
 							],
 							"path": [
+								"api",
 								"v1",
 								"users",
 								"4"
@@ -304,7 +305,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{URL}}/api/v1/invoices?page=1&limit=1",
+							"raw": "{{URL}}/api/v1/invoices?page=1&limit=10",
 							"host": [
 								"{{URL}}"
 							],
@@ -320,7 +321,7 @@
 								},
 								{
 									"key": "limit",
-									"value": "1"
+									"value": "10"
 								}
 							]
 						}
@@ -377,7 +378,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{URL}}/api/v1/roles?page=1&limit=1",
+							"raw": "{{URL}}/api/v1/roles?page=1&limit=10",
 							"host": [
 								"{{URL}}"
 							],
@@ -393,7 +394,7 @@
 								},
 								{
 									"key": "limit",
-									"value": "1"
+									"value": "10"
 								}
 							]
 						}
@@ -517,7 +518,7 @@
 						"method": "PATCH",
 						"header": [],
 						"url": {
-							"raw": "{{URL}}/api/v1/orders/9/approve",
+							"raw": "{{URL}}/api/v1/orders/13/approve",
 							"host": [
 								"{{URL}}"
 							],
@@ -525,7 +526,7 @@
 								"api",
 								"v1",
 								"orders",
-								"9",
+								"13",
 								"approve"
 							]
 						}
@@ -548,7 +549,7 @@
 						"method": "PATCH",
 						"header": [],
 						"url": {
-							"raw": "{{URL}}/api/v1/orders/10/cancel",
+							"raw": "{{URL}}/api/v1/orders/14/cancel",
 							"host": [
 								"{{URL}}"
 							],
@@ -556,7 +557,7 @@
 								"api",
 								"v1",
 								"orders",
-								"10",
+								"14",
 								"cancel"
 							]
 						}
@@ -579,7 +580,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{URL}}/api/v1/orders?page=1&limit=1",
+							"raw": "{{URL}}/api/v1/orders?page=1&limit=10",
 							"host": [
 								"{{URL}}"
 							],
@@ -595,7 +596,7 @@
 								},
 								{
 									"key": "limit",
-									"value": "1"
+									"value": "10"
 								}
 							]
 						}
