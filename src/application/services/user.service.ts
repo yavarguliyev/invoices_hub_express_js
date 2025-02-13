@@ -37,17 +37,17 @@ export class UserService implements IUserService {
   private userRepository: UserRepository;
   private roleRepository: RoleRepository;
 
-  private userLoader: DataLoader<number, UserDto>;
+  private userDtoLoaderById: DataLoader<number, UserDto>;
 
   constructor () {
     this.userRepository = Container.get(UserRepository);
     this.roleRepository = Container.get(RoleRepository);
 
-    this.userLoader = DataLoaderInfrastructure.getDataLoader({
+    this.userDtoLoaderById = DataLoaderInfrastructure.getDataLoader({
       entity: User,
       repository: this.userRepository,
       Dto: UserDto,
-      idField: 'id',
+      fetchField: 'id',
       relations: [
         {
           relation: 'role',
@@ -73,7 +73,7 @@ export class UserService implements IUserService {
   }
 
   async getBy ({ id }: GetUserArgs) {
-    const userDto = await this.userLoader.load(id);
+    const userDto = await this.userDtoLoaderById.load(id);
 
     return { payload: userDto, result: ResultMessage.SUCCEED };
   }
@@ -120,6 +120,8 @@ export class UserService implements IUserService {
     const updatedUser = await this.userRepository.save(userToBeUpdated);
     const userDto = plainToInstance(UserDto, updatedUser, { excludeExtraneousValues: true }) as UserDto;
 
+    this.userDtoLoaderById.clear(id);
+
     return { payload: userDto, result: ResultMessage.SUCCEED };
   }
 
@@ -144,6 +146,8 @@ export class UserService implements IUserService {
     userToBeUpdated.password = password;
     await this.userRepository.save(userToBeUpdated);
 
+    this.userDtoLoaderById.clear(id);
+
     return { result: ResultMessage.SUCCEED };
   }
 
@@ -155,6 +159,8 @@ export class UserService implements IUserService {
     }
 
     await this.userRepository.softDelete(id);
+    this.userDtoLoaderById.clear(id);
+
     return { result: ResultMessage.SUCCEED };
   }
 }

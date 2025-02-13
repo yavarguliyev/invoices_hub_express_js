@@ -15,37 +15,38 @@ interface IEntityDataLoaderParams<Entity extends IEntityWithId, D> {
   relations?: IRelationParams<D>[];
   repository: Repository<Entity>;
   Dto: new () => D;
-  idField?: keyof Entity;
+  fetchField?: keyof Entity;
 }
 
 export class DataLoaderInfrastructure {
-  private static dataLoaders: Map<string, DataLoader<string | number, unknown>> = new Map();
+  private static dataLoaders: Map<string, DataLoader<unknown, unknown>> = new Map();
 
-  static getDataLoader<Entity extends IEntityWithId, D extends object> (params: IEntityDataLoaderParams<Entity, D>): DataLoader<Entity['id'], D> {
+  static getDataLoader<Entity extends IEntityWithId, D extends object, FetchField extends keyof Entity = keyof Entity> (
+    params: IEntityDataLoaderParams<Entity, D>
+  ): DataLoader<Entity[FetchField], D> {
     const entityName = typeof params.entity === 'function' ? params.entity.name : params.entity;
     const relationsKey = JSON.stringify((params.relations || []).map(r => r.relation).sort());
-    const loaderKey = `${entityName}_${relationsKey}`;
+    const fetchField = params.fetchField as FetchField;
+    const loaderKey = `${entityName}_${relationsKey}_${String(fetchField)}`;
 
     if (this.dataLoaders.has(loaderKey)) {
-      return this.dataLoaders.get(loaderKey)! as DataLoader<Entity['id'], D>;
+      return this.dataLoaders.get(loaderKey)! as DataLoader<Entity[FetchField], D>;
     }
 
-    const loader = new DataLoader<Entity['id'], D>(async (ids) => {
-      const idField = params.idField || 'id';
-
+    const loader = new DataLoader<Entity[FetchField], D>(async (fetchValues) => {
       const data = await params.repository.find({
-        where: { [idField]: In(ids) } as FindOptionsWhere<Entity>,
+        where: { [fetchField]: In(fetchValues) } as FindOptionsWhere<Entity>,
         relations: params.relations?.map((r) => r.relation)
       });
 
-      return ids.map((id) => {
-        const item = data.find((item) => item[idField] === id);
+      return fetchValues.map((value) => {
+        const item = data.find((item) => item[fetchField] === value);
 
         if (!item) {
-          throw new NotFoundError(`${entityName} with id ${id} not found`);
+          throw new NotFoundError(`${entityName} with ${String(fetchField)} ${value} not found`);
         }
 
-        return plainToInstance(params.Dto, { ...item, ...this.processRelations<D>(item, params.relations) });
+        return plainToInstance(params.Dto, { ...item, ...this.processRelations<D>(item, params.relations) }, { excludeExtraneousValues: true });
       });
     });
 

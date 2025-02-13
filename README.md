@@ -239,15 +239,16 @@
 
 # 💻 Technologies
 
-* Node.js: JavaScript runtime for building scalable network applications.
-* ExpressJS: Web framework for Node.js to simplify route handling and middleware management.
-* TypeScript: Superset of JavaScript that adds strong typing and compile-time checks.
-* PostgreSQL: Relational database for structured data storage.
-* Redis: In-memory data structure store for caching and job queue management.
-* Clustering & Worker Threads: Used together for concurrency management, ensuring that the app efficiently utilizes multi-core processors without blocking the main thread.
-* TypeDI: Dependency injection library to manage dependencies in a clean and scalable way.
-* Swagger: API documentation tool for generating RESTful API documentation.
-* Postman Collection: A Postman collection file is included in the project for API testing and use case validation.
+* Node.js: JavaScript runtime for building scalable, event-driven network applications.
+* ExpressJS: Minimalist web framework for Node.js that simplifies routing and middleware management.
+* TypeScript: A statically typed superset of JavaScript that enhances development with compile-time checks.
+* PostgreSQL: Robust relational database for structured data storage, ensuring reliability and ACID compliance.
+* Redis: High-performance, in-memory data structure store, used for caching and managing job queues.
+* Clustering & Worker Threads: Leverages multi-core processors for concurrency, ensuring non-blocking performance.
+* TypeDI: A dependency injection library that promotes clean architecture and scalable dependency management.
+* Swagger: Tool for automatically generating RESTful API documentation, improving collaboration and client integration.
+* Postman Collection: Pre-configured Postman collection for API testing and validation.
+* DataLoader Implementation: Optimizes database queries by batching and caching requests, addressing the N+1 query problem and improving performance in high-volume environments.
 
 ---
 
