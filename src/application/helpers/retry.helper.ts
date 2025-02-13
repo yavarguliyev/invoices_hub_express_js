@@ -1,7 +1,8 @@
+import { RetryOptions } from 'domain/interfaces/retry-options.interface';
 import { LoggerTracerInfrastructure } from 'infrastructure/logger-tracer.infrastructure';
 
 export class RetryHelper {
-  static async executeWithRetry<T> (fn: () => Promise<T>, serviceName: string, maxRetries: number, retryDelay: number): Promise<T> {
+  static async executeWithRetry<T> (fn: () => Promise<T>, { serviceName, maxRetries, retryDelay } : RetryOptions): Promise<T> {
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
         LoggerTracerInfrastructure.log(`${serviceName} disconnected successfully`, 'info');

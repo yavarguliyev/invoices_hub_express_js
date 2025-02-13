@@ -8,7 +8,7 @@ import { IAuthService } from 'application/services/auth.service';
 import { SigninArgs } from 'core/inputs/signin.args';
 import { swaggerSchemas } from 'application/helpers/swagger-schemas.helper';
 
-@JsonController(createVersionedRoute('/auth', 'v1'))
+@JsonController(createVersionedRoute({ controllerPath: '/auth', version: 'v1' }))
 export class AuthController {
   private authService: IAuthService;
 

@@ -14,7 +14,7 @@ import { GetQueryResultsArgs } from 'core/inputs/get-query-results.args';
 import { UpdateUserPasswordArgs } from 'core/inputs/update-user-password.args';
 import { swaggerSchemas } from 'application/helpers/swagger-schemas.helper';
 
-@JsonController(createVersionedRoute('/users', 'v1'))
+@JsonController(createVersionedRoute({ controllerPath: '/users', version: 'v1' }))
 export class UsersController {
   private userService: IUserService;
 

@@ -22,7 +22,7 @@ export class InvoiceService implements IInvoiceService {
 
   @RedisDecorator<InvoiceDto>({ keyTemplate: REDIS_CACHE_KEYS.ORDER_INVOICE_GET_LIST })
   async get (query: GetQueryResultsArgs) {
-    const { payloads, total } = await queryResults(this.invoiceRepository, query, InvoiceDto);
+    const { payloads, total } = await queryResults({ repository: this.invoiceRepository, query, dtoClass: InvoiceDto });
 
     return { payloads, total, result: ResultMessage.SUCCEED };
   }

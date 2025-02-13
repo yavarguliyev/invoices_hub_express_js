@@ -7,7 +7,7 @@ import { ContainerHelper } from 'application/ioc/helpers/container.helper';
 import { ContainerItems } from 'application/ioc/static/container-items';
 import { swaggerSchemas } from 'application/helpers/swagger-schemas.helper';
 
-@JsonController(createVersionedRoute('/healthcheck', 'v1'))
+@JsonController(createVersionedRoute({ controllerPath: '/healthcheck', version: 'v1' }))
 export class HealthcheckController {
   private healthCheckService: IHealthcheckService;
 

@@ -20,7 +20,7 @@ export class WorkerThreadsInfrastructure {
     return worker;
   }
 
-  private static async spawnWorkerThread (task: WorkerThreadsTask): Promise<any> {
+  private static async spawnWorkerThread (task: WorkerThreadsTask) {
     return new Promise((resolve, reject) => {
       const worker = this.workerPool.pop() || this.createWorker();
 
@@ -39,7 +39,7 @@ export class WorkerThreadsInfrastructure {
     });
   }
 
-  static async executeHeavyTask (): Promise<any> {
+  static async executeHeavyTask () {
     const total = Math.ceil(this.totalTasks / this.numThreads);
     const tasks = Array.from({ length: this.numThreads }).map(() =>
       this.spawnWorkerThread({ name: WorkerThreadsOperations.HEAVY_COMPUTATION, params: { total } })
@@ -48,7 +48,7 @@ export class WorkerThreadsInfrastructure {
     return Promise.all(tasks);
   }
 
-  static shutdownWorkers (): void {
+  static shutdownWorkers () {
     LoggerTracerInfrastructure.log('Shutting down all worker threads...', 'info');
     this.workerPool.forEach(worker => worker.terminate());
     this.workerPool = [];

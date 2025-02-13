@@ -1,12 +1,12 @@
 import { CustomError } from 'core/errors/custom-error';
+import { NotFoundDetails } from 'domain/interfaces/not-found-details.interface';
 
-class NotFoundError extends CustomError {
+class NotFoundError extends CustomError<NotFoundDetails> {
   statusCode = 404;
   reason = 'Resource not found';
 
-  constructor (message: string, details?: Record<string, any>) {
+  constructor (message: string, details?: NotFoundDetails) {
     super(message, details);
-
     Object.setPrototypeOf(this, NotFoundError.prototype);
   }
 

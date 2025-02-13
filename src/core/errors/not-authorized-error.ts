@@ -1,12 +1,12 @@
 import { CustomError } from 'core/errors/custom-error';
+import { NotAuthorizedDetails } from 'domain/interfaces/not-authorized-details.interface';
 
-class NotAuthorizedError extends CustomError {
+class NotAuthorizedError extends CustomError<NotAuthorizedDetails> {
   statusCode = 401;
   reason = 'User not authorized';
 
-  constructor (details?: Record<string, any>) {
+  constructor (details?: NotAuthorizedDetails) {
     super('Not authorized!', details);
-
     Object.setPrototypeOf(this, NotAuthorizedError.prototype);
   }
 

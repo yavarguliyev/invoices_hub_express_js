@@ -60,12 +60,12 @@ export function configureMiddlewares () {
 };
 
 export function configureControllersAndServices () {
-  registerService(ContainerItems.IAuthService, AuthService);
-  registerService(ContainerItems.IHealthcheckService, HealthcheckService);
-  registerService(ContainerItems.IInvoiceService, InvoiceService);
-  registerService(ContainerItems.IOrderService, OrderService);
-  registerService(ContainerItems.IRoleService, RoleService);
-  registerService(ContainerItems.IUserService, UserService);
+  registerService({ id: ContainerItems.IAuthService, service: AuthService });
+  registerService({ id: ContainerItems.IHealthcheckService, service: HealthcheckService });
+  registerService({ id: ContainerItems.IInvoiceService, service: InvoiceService });
+  registerService({ id: ContainerItems.IOrderService, service: OrderService });
+  registerService({ id: ContainerItems.IRoleService, service: RoleService });
+  registerService({ id: ContainerItems.IUserService, service: UserService });
 
   ContainerHelper
     .registerController(AuthController)

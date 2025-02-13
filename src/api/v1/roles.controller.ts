@@ -10,7 +10,7 @@ import { GetQueryResultsArgs } from 'core/inputs/get-query-results.args';
 import { swaggerSchemas } from 'application/helpers/swagger-schemas.helper';
 
 @Authorized([Roles.GlobalAdmin, Roles.Admin])
-@JsonController(createVersionedRoute('/roles', 'v1'))
+@JsonController(createVersionedRoute({ controllerPath: '/roles', version: 'v1' }))
 export class RolesController {
   private roleService: IRoleService;
 

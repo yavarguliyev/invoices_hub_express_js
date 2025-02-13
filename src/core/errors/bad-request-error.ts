@@ -1,12 +1,12 @@
 import { CustomError } from 'core/errors/custom-error';
+import { BadRequestDetails } from 'domain/interfaces/bad-request-details.interface';
 
-class BadRequestError extends CustomError {
+class BadRequestError extends CustomError<BadRequestDetails> {
   statusCode = 400;
   reason = 'Bad request';
 
-  constructor (message: string, details?: Record<string, any>) {
+  constructor (message: string, details?: BadRequestDetails) {
     super(message, details);
-
     Object.setPrototypeOf(this, BadRequestError.prototype);
   }
 

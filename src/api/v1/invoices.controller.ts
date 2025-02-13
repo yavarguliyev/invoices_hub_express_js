@@ -9,7 +9,7 @@ import { Roles } from 'domain/enums/roles.enum';
 import { GetQueryResultsArgs } from 'core/inputs/get-query-results.args';
 import { swaggerSchemas } from 'application/helpers/swagger-schemas.helper';
 
-@JsonController(createVersionedRoute('/invoices', 'v1'))
+@JsonController(createVersionedRoute({ controllerPath: '/invoices', version: 'v1' }))
 export class InvoicesController {
   private invoiceService: IInvoiceService;
 

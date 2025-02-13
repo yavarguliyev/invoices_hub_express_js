@@ -30,8 +30,10 @@ export class ClusterShutdownHelper {
       }
 
       shutdownTimer = this.startShutdownTimer();
-    } catch (err: any) {
-      LoggerTracerInfrastructure.log(`Error during shutdown: ${err?.message || 'Unknown error occurred'}`, 'error');
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+
+      LoggerTracerInfrastructure.log(`Error during shutdown: ${errorMessage}`, 'error');
     } finally {
       if (shutdownTimer) {
         clearTimeout(shutdownTimer);
@@ -55,9 +57,30 @@ export class ClusterShutdownHelper {
 
   private static async disconnectServices (): Promise<void> {
     const disconnectPromises = [
-      RetryHelper.executeWithRetry(() => RedisInfrastructure.disconnect(), 'Redis', this.maxRetries, this.retryDelay),
-      RetryHelper.executeWithRetry(() => RabbitMQInfrastructure.disconnect(), 'RabbitMQ', this.maxRetries, this.retryDelay),
-      RetryHelper.executeWithRetry(() => DbConnectionInfrastructure.disconnect(), 'Database', this.maxRetries, this.retryDelay)
+      RetryHelper.executeWithRetry(() => RedisInfrastructure.disconnect(), {
+        serviceName: 'Redis',
+        maxRetries: this.maxRetries,
+        retryDelay: this.retryDelay,
+        onRetry: (attempt) => {
+          LoggerTracerInfrastructure.log(`Retrying Redis disconnect, attempt ${attempt}`);
+        }
+      }),
+      RetryHelper.executeWithRetry(() => RabbitMQInfrastructure.disconnect(), {
+        serviceName: 'RabbitMQ',
+        maxRetries: this.maxRetries,
+        retryDelay: this.retryDelay,
+        onRetry: (attempt) => {
+          LoggerTracerInfrastructure.log(`Retrying RabbitMQ disconnect, attempt ${attempt}`);
+        }
+      }),
+      RetryHelper.executeWithRetry(() => DbConnectionInfrastructure.disconnect(), {
+        serviceName: 'Database',
+        maxRetries: this.maxRetries,
+        retryDelay: this.retryDelay,
+        onRetry: (attempt) => {
+          LoggerTracerInfrastructure.log(`Retrying Database disconnect, attempt ${attempt}`);
+        }
+      })
     ];
 
     try {

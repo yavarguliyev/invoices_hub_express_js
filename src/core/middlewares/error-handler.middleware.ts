@@ -2,16 +2,7 @@ import { Middleware, ExpressErrorMiddlewareInterface } from 'routing-controllers
 import { Request, Response } from 'express';
 
 import { CustomError } from 'core/errors';
-
-interface ValidationError {
-  property: string;
-  constraints: any;
-  reason: string;
-}
-
-interface ErrorWithValidation extends Error {
-  errors?: ValidationError[];
-}
+import { ErrorWithValidation, ValidationError } from 'domain/interfaces/error-handler-middleware.interface';
 
 @Middleware({ type: 'after' })
 export class ErrorHandlerMiddleware implements ExpressErrorMiddlewareInterface {

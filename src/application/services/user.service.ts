@@ -22,6 +22,7 @@ import { GetQueryResultsArgs } from 'core/inputs/get-query-results.args';
 import { generateStrongPassword, queryResults } from 'application/helpers/utility-functions.helper';
 import { UpdateUserPasswordArgs } from 'core/inputs/update-user-password.args';
 import { DataLoaderInfrastructure } from 'infrastructure/data-loader.infrastructure';
+import User from 'domain/entities/user.entity';
 
 export interface IUserService {
   get (query: GetQueryResultsArgs): Promise<ResponseResults<UserDto>>;
@@ -43,18 +44,29 @@ export class UserService implements IUserService {
     this.roleRepository = Container.get(RoleRepository);
 
     this.userLoader = DataLoaderInfrastructure.getDataLoader({
-      entity: UserRepository,
-      relations: [{ relation: 'role', relationDto: RoleDto }],
+      entity: User,
       repository: this.userRepository,
-      dto: UserDto
+      Dto: UserDto,
+      idField: 'id',
+      relations: [
+        {
+          relation: 'role',
+          relationDto: RoleDto
+        }
+      ]
     });
   }
 
   @RedisDecorator<UserDto>({ keyTemplate: REDIS_CACHE_KEYS.USER_GET_LIST })
   async get (query: GetQueryResultsArgs) {
-    const { payloads, total } = await queryResults(this.userRepository, query, UserDto, {
-      RelatedDtoClass: RoleDto,
-      relationField: 'role'
+    const { payloads, total } = await queryResults({
+      repository: this.userRepository,
+      query,
+      dtoClass: UserDto,
+      relatedEntity: {
+        RelatedDtoClass: RoleDto,
+        relationField: 'role'
+      }
     });
 
     return { payloads, total, result: ResultMessage.SUCCEED };
@@ -72,15 +84,15 @@ export class UserService implements IUserService {
 
     const existingUser = await this.userRepository.findOne({ where: { email }, withDeleted: true });
     if (existingUser) {
-      throw new BadRequestError('User already exists with the provided email.', { email });
+      throw new BadRequestError('User already exists with the provided email.', { errorField: userData.email });
     }
 
     const userRole = await this.roleRepository.findOne({ where: { id: Number(process.env.STANDARD_ROLE_ID) } });
     if (!userRole) {
-      throw new NotFoundError('Role not found.', { roleId });
+      throw new NotFoundError('Role not found.', { resourceId: roleId });
     }
 
-    const user = this.userRepository.create({ ...userData, role: userRole, password: generateStrongPassword() });
+    const user = this.userRepository.create({ ...userData, role: userRole, password: generateStrongPassword({}) });
     await this.userRepository.save(user);
 
     // TODO: In the future, extend this functionality to send an email notification
@@ -93,13 +105,13 @@ export class UserService implements IUserService {
   async update (id: number, userData: UpdateUserArgs) {
     const userToBeUpdated = await this.userRepository.findOneBy({ id });
     if (!userToBeUpdated) {
-      throw new NotFoundError(`User with ID ${id} not found.`, { id });
+      throw new NotFoundError(`User with ID ${id} not found.`, { resourceId: id });
     }
 
     if (userData?.email) {
       const existingUser = await this.userRepository.findOne({ where: { email: userData?.email }, withDeleted: true });
       if (existingUser) {
-        throw new BadRequestError('User already exists with the provided email.', { email: userData.email });
+        throw new BadRequestError('User already exists with the provided email.', { errorField: userData.email });
       }
     }
 
@@ -117,16 +129,16 @@ export class UserService implements IUserService {
 
     const userToBeUpdated = await this.userRepository.findOneBy({ id });
     if (!userToBeUpdated) {
-      throw new NotFoundError(`User with ID ${id} not found.`, { id });
+      throw new NotFoundError(`User with ID ${id} not found.`, { resourceId: id });
     }
 
     const isCurrentPasswordValid = await bcrypt.compare(currentPassword, userToBeUpdated.password);
     if (!isCurrentPasswordValid) {
-      throw new BadRequestError('Current password is incorrect.', { id });
+      throw new BadRequestError('Current password is incorrect.', { errorField: id });
     }
 
     if (password !== confirmPassword) {
-      throw new BadRequestError('Passwords do not match.', { id });
+      throw new BadRequestError('Passwords do not match.', { errorField: id });
     }
 
     userToBeUpdated.password = password;
@@ -139,7 +151,7 @@ export class UserService implements IUserService {
   async delete ({ id }: DeleteUserArgs) {
     const existingUser = await this.userRepository.findOne({ where: { id } });
     if (!existingUser) {
-      throw new NotFoundError(`User with ID ${id} not found.`, { id });
+      throw new NotFoundError(`User with ID ${id} not found.`, { resourceId: id });
     }
 
     await this.userRepository.softDelete(id);

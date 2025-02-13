@@ -40,7 +40,7 @@ export class OrderService implements IOrderService {
 
   @RedisDecorator<OrderDto>({ keyTemplate: REDIS_CACHE_KEYS.ORDER_INVOICE_GET_LIST })
   async get (query: GetQueryResultsArgs) {
-    const { payloads, total } = await queryResults(this.orderRepository, query, OrderDto);
+    const { payloads, total } = await queryResults({ repository: this.orderRepository, query, dtoClass: OrderDto });
 
     return { payloads, total, result: ResultMessage.SUCCEED };
   }
@@ -98,7 +98,7 @@ export class OrderService implements IOrderService {
 
     const dataSource = DbConnectionInfrastructure.getDataSource();
     if (!dataSource) {
-      throw new DatabaseConnectionError({ service: serviceName });
+      throw new DatabaseConnectionError({ dbName: serviceName });
     }
 
     const queryRunner = dataSource.createQueryRunner();
@@ -121,9 +121,11 @@ export class OrderService implements IOrderService {
       // TODO: Notify the user with an email that includes an attachment for the invoice.
 
       return { result: ResultMessage.SUCCEED };
-    } catch (error: any) {
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'DB operation failed';
+
       await queryRunner.rollbackTransaction();
-      throw new BadRequestError(error?.message ?? 'DB operation failed');
+      throw new BadRequestError(errorMessage);
     } finally {
       await queryRunner.release();
     }

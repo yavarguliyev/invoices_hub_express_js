@@ -58,10 +58,12 @@ const main = async (): Promise<void> => {
 
       startServer(appServer, port);
 
-      handleProcessSignals(ClusterShutdownHelper.shutDown.bind(ClusterShutdownHelper), appServer);
+      handleProcessSignals({ shutdownCallback: ClusterShutdownHelper.shutDown.bind(ClusterShutdownHelper), callbackArgs: [appServer] });
     }
-  } catch (err: any) {
-    LoggerTracerInfrastructure.log(`Error during initialization: ${err?.message || 'Unknown error occurred'}`, 'error');
+  } catch (err) {
+    const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
+
+    LoggerTracerInfrastructure.log(`Error during initialization: ${errorMessage}`, 'error');
     process.exit(1);
   }
 };

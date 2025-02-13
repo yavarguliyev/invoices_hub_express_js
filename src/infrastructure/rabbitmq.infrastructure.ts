@@ -9,16 +9,19 @@ export default class RabbitMQInfrastructure {
   private static connection?: Connection;
 
   static async initialize (): Promise<void> {
-    await safelyInitializeService(Variables.RABBIT_MQ, async () => {
-      const connection = await connect(getEnvVariable(Variables.RABBITMQ_URL));
+    await safelyInitializeService({
+      serviceName: Variables.RABBIT_MQ,
+      initializeFn: async () => {
+        const connection = await connect(getEnvVariable(Variables.RABBITMQ_URL));
 
-      RabbitMQInfrastructure.connection = connection;
-      RabbitMQInfrastructure.channel = await connection.createChannel();
+        RabbitMQInfrastructure.connection = connection;
+        RabbitMQInfrastructure.channel = await connection.createChannel();
+      }
     });
   }
 
   private static async ensureQueueExists (queueName: string): Promise<void> {
-    const channel = ensureInitialized(RabbitMQInfrastructure.channel, Variables.RABBIT_MQ_SERVICE);
+    const channel = ensureInitialized({ connection: RabbitMQInfrastructure.channel, serviceName: Variables.RABBIT_MQ_SERVICE });
 
     await channel?.assertQueue(queueName, { durable: true });
   }
@@ -26,14 +29,14 @@ export default class RabbitMQInfrastructure {
   static async publish (queueName: string, message: string): Promise<void> {
     await RabbitMQInfrastructure.ensureQueueExists(queueName);
 
-    const channel = ensureInitialized(RabbitMQInfrastructure.channel, Variables.RABBIT_MQ_SERVICE);
+    const channel = ensureInitialized({ connection: RabbitMQInfrastructure.channel, serviceName: Variables.RABBIT_MQ_SERVICE });
     channel?.sendToQueue(queueName, Buffer.from(message));
   }
 
   static async subscribe (queueName: string, callback: (message: string) => void): Promise<void> {
     await RabbitMQInfrastructure.ensureQueueExists(queueName);
 
-    const channel = ensureInitialized(RabbitMQInfrastructure.channel, Variables.RABBIT_MQ_SERVICE);
+    const channel = ensureInitialized({ connection: RabbitMQInfrastructure.channel, serviceName: Variables.RABBIT_MQ_SERVICE });
     channel?.consume(queueName, (msg: ConsumeMessage | null) => {
       if (msg) {
         callback(msg.content.toString());

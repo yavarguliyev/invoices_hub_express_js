@@ -2,7 +2,7 @@ import { Action } from 'routing-controllers';
 import passport from 'passport';
 
 import { NotAuthorizedError } from 'core/errors';
-import { ExpressContext, TokenPayload } from 'domain/interfaces/express-context.interface';
+import { AuthenticationInfo, ExpressContext, TokenPayload } from 'domain/interfaces/express-context.interface';
 import { ContainerHelper } from 'application/ioc/helpers/container.helper';
 import { IUserService } from 'application/services/user.service';
 import { ContainerItems } from 'application/ioc/static/container-items';
@@ -10,7 +10,7 @@ import { UserDto } from 'domain/dto/user.dto';
 
 export const getTokenData = (req: Request): Promise<TokenPayload> =>
   new Promise((resolve, reject) => {
-    passport.authenticate('jwt', { session: false, failureFlash: false, failWithError: true }, (err: any, payload: any, info: any) => {
+    passport.authenticate('jwt', { session: false, failureFlash: false, failWithError: true }, (err: Error, payload: TokenPayload, info: AuthenticationInfo) => {
       if (err) reject(err);
       if (payload) resolve(payload);
       if (info) reject(new NotAuthorizedError());

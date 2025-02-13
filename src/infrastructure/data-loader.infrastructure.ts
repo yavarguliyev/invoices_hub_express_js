@@ -1,59 +1,77 @@
 import { Repository, EntityTarget, In, FindOptionsWhere } from 'typeorm';
 import { plainToInstance } from 'class-transformer';
 import DataLoader from 'dataloader';
+import { NotFoundError } from 'routing-controllers';
 
-type IEntityWithId = Record<string, any> & { id: number | string };
+type IEntityWithId<T extends object = {}> = T & { id: number | string };
 
-interface IRelationParams {
-  relation: string;
-  relationDto: new () => any;
+interface IRelationParams<T> {
+  relation: keyof T & string;
+  relationDto: new () => T[keyof T];
 }
 
-interface IEntityDataLoaderParams<Entity extends IEntityWithId> {
+interface IEntityDataLoaderParams<Entity extends IEntityWithId, D> {
   entity: EntityTarget<Entity>;
-  relations: IRelationParams[];
+  relations?: IRelationParams<D>[];
   repository: Repository<Entity>;
-  dto: new () => any;
+  Dto: new () => D;
+  idField?: keyof Entity;
 }
 
 export class DataLoaderInfrastructure {
-  private static dataLoaders: Map<string, DataLoader<any, any>> = new Map();
+  private static dataLoaders: Map<string, DataLoader<string | number, unknown>> = new Map();
 
-  static getDataLoader<Entity extends IEntityWithId> (params: IEntityDataLoaderParams<Entity>): DataLoader<any, any> {
+  static getDataLoader<Entity extends IEntityWithId, D extends object> (params: IEntityDataLoaderParams<Entity, D>): DataLoader<Entity['id'], D> {
     const entityName = typeof params.entity === 'function' ? params.entity.name : params.entity;
-    const loaderKey = `${entityName}_${params.relations.map(r => r.relation).join('_')}`;
+    const relationsKey = JSON.stringify((params.relations || []).map(r => r.relation).sort());
+    const loaderKey = `${entityName}_${relationsKey}`;
 
     if (this.dataLoaders.has(loaderKey)) {
-      return this.dataLoaders.get(loaderKey)!;
+      return this.dataLoaders.get(loaderKey)! as DataLoader<Entity['id'], D>;
     }
 
-    const loader = new DataLoader(async (ids: readonly any[]) => {
-      const data = await params.repository.find({ where: { id: In(ids) } as FindOptionsWhere<Entity>, relations: params.relations.map(r => r.relation) });
+    const loader = new DataLoader<Entity['id'], D>(async (ids) => {
+      const idField = params.idField || 'id';
 
-      return ids.map(id => {
-        const item = data.find(item => item.id === id);
+      const data = await params.repository.find({
+        where: { [idField]: In(ids) } as FindOptionsWhere<Entity>,
+        relations: params.relations?.map((r) => r.relation)
+      });
+
+      return ids.map((id) => {
+        const item = data.find((item) => item[idField] === id);
 
         if (!item) {
-          return params.relations.reduce((acc, { relationDto, relation }) => {
-            acc[relation] = plainToInstance(relationDto, {}, { excludeExtraneousValues: true });
-            return acc;
-          }, {} as any);
+          throw new NotFoundError(`${entityName} with id ${id} not found`);
         }
 
-        const transformedItem = {
-          ...item,
-          ...params.relations.reduce((acc, { relation, relationDto }) => {
-            acc[relation] = plainToInstance(relationDto, item[`__${relation}__`] || {}, { excludeExtraneousValues: true });
-            return acc;
-          }, {} as Record<string, any>)
-        };
-
-        return plainToInstance(params.dto, transformedItem, { excludeExtraneousValues: true });
+        return plainToInstance(params.Dto, { ...item, ...this.processRelations<D>(item, params.relations) });
       });
     });
 
     this.dataLoaders.set(loaderKey, loader);
 
     return loader;
+  }
+
+  private static processRelations<T extends object> (item: IEntityWithId, relations?: IRelationParams<T>[]): Partial<T> {
+    if (!relations) return {} as Partial<T>;
+
+    return relations.reduce<Partial<T>>((acc, { relation, relationDto }) => {
+      if (relation in item) {
+        let relationValue = (item as T)[relation];
+
+        if (relationValue instanceof Promise) {
+          relationValue = (item as T)[`__${relation}__` as keyof T & string] ?? relationValue;
+        }
+
+        const resolvedValue = relationValue instanceof Promise
+          ? relationValue.then(value => plainToInstance(relationDto, value || {}, { excludeExtraneousValues: true }))
+          : plainToInstance(relationDto, relationValue || {}, { excludeExtraneousValues: true });
+
+        acc[relation as keyof T] = resolvedValue as T[keyof T];
+      }
+      return acc;
+    }, {} as Partial<T>);
   }
 }

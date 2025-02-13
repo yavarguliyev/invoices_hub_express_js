@@ -11,7 +11,7 @@ import { swaggerSchemas } from 'application/helpers/swagger-schemas.helper';
 import { UserDto } from 'domain/dto/user.dto';
 import { CreateOrderArgs } from 'core/inputs/create-order.args';
 
-@JsonController(createVersionedRoute('/orders', 'v1'))
+@JsonController(createVersionedRoute({ controllerPath: '/orders', version: 'v1' }))
 export class OrdersController {
   private orderService: IOrderService;
 

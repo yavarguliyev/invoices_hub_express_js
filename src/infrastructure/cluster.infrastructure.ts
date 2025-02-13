@@ -21,8 +21,10 @@ export class ClusterInfrastructure {
       } else {
         WorkerThreadsInfrastructure.executeHeavyTask();
       }
-    } catch (err: any) {
-      LoggerTracerInfrastructure.log(`Cluster initialization error: ${err.message}`, 'error');
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+
+      LoggerTracerInfrastructure.log(`Cluster initialization error: ${errorMessage}`, 'error');
       process.exit(1);
     }
   }
@@ -30,7 +32,7 @@ export class ClusterInfrastructure {
   private static setupPrimaryProcess (): void {
     const numCPUs = Number(process.env.CLUSTER_WORKERS);
     this.forkWorkers(numCPUs);
-    handleProcessSignals(ClusterShutdownHelper.shutdownWorkers);
+    handleProcessSignals({ shutdownCallback: ClusterShutdownHelper.shutdownWorkers, callbackArgs: [] });
   }
 
   private static forkWorkers (numCPUs: number): void {
