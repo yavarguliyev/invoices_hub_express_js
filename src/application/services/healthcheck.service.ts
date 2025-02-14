@@ -15,6 +15,9 @@ export class HealthcheckService implements IHealthcheckService {
       rabbitMQ: RabbitMQInfrastructure.isConnected()
     };
 
+    // await WorkerThreadsInfrastructure.executeHeavyTask({ name: WorkerThreadsOperations.DATA_TRANSFORMATION, params: services });
+    // await WorkerThreadsInfrastructure.executeHeavyTask({ name: WorkerThreadsOperations.HEAVY_COMPUTATION, params: { iterations: Number(process.env.HEAVY_COMPUTATION_TOTAL) } });
+
     return {
       message: 'OK',
       uptime: process.uptime(),

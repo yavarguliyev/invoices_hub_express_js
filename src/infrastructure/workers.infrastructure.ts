@@ -1,54 +1,69 @@
 import { parentPort } from 'worker_threads';
 
-import { TaskParams, WorkerThreadsOperations } from 'domain/enums/worker-threads-operations.enum';
-import { WorkerThreadsTask } from 'core/types/worker-threads-task.type';
+import { WorkerThreadsOperations } from 'domain/enums/worker-threads-operations.enum';
+import { Payload } from 'core/types/worker-threads-operations.type';
+import { Task } from 'domain/interfaces/worker-threads-operations.interface';
 
-class WorkersInfrastructureTaskHandler {
-  private static taskExecutors: {
-    [WorkerThreadsOperations.HEAVY_COMPUTATION]: (params: TaskParams[WorkerThreadsOperations.HEAVY_COMPUTATION]) => number;
-    [WorkerThreadsOperations.DATA_TRANSFORMATION]: (params: TaskParams[WorkerThreadsOperations.DATA_TRANSFORMATION]) => string;
-  } = {
-      [WorkerThreadsOperations.HEAVY_COMPUTATION]: WorkersInfrastructureTaskHandler.heavyComputation,
-      [WorkerThreadsOperations.DATA_TRANSFORMATION]: WorkersInfrastructureTaskHandler.dataTransformation
-    };
+class GenericTask<P extends object, R extends Payload> implements Task<P, R> {
+  private readonly operation: string;
+  private readonly processor: (payload: P) => R;
 
-  static async execute<T extends WorkerThreadsOperations> (task: WorkerThreadsTask<T>) {
-    const executeTask = this.taskExecutors[task.name];
-    if (!executeTask) {
-      throw new Error(`Unknown task: ${task.name}`);
-    }
-
-    if ('total' in task.params) {
-      return executeTask({ total: task.params.total });
-    }
-
-    if ('data' in task.params) {
-      return executeTask({ data: task.params.data });
-    }
-
-    throw new Error(`Task ${task.name} not handled correctly`);
+  constructor (operation: string, processor: (payload: P) => R) {
+    this.operation = operation;
+    this.processor = processor;
   }
 
-  private static heavyComputation (params: TaskParams[WorkerThreadsOperations.HEAVY_COMPUTATION]) {
-    const total = params?.total ?? Number(process.env.HEAVY_COMPUTATION_TOTAL);
-
-    return !Number.isFinite(total) ? 0 : total;
-  }
-
-  private static dataTransformation (params: TaskParams[WorkerThreadsOperations.DATA_TRANSFORMATION]) {
-    return JSON.stringify(params.data).toUpperCase();
+  execute (payload: P): R {
+    return this.processor(payload);
   }
 }
 
-parentPort?.on('message', async <T extends WorkerThreadsOperations>(task: WorkerThreadsTask<T>) => {
-  if (task.action === 'shutdown') {
+class WorkerTaskHandler {
+  private static taskExecutors: { [key in WorkerThreadsOperations]?: Task<object, Payload>; } = {};
+
+  static registerTask<T extends WorkerThreadsOperations, P extends object> (taskName: T, processor: (payload: P) => Payload) {
+    WorkerTaskHandler.taskExecutors[taskName] = new GenericTask<P, Payload>(taskName, processor);
+  }
+
+  static executeTask<T extends WorkerThreadsOperations> (taskName: T, param: object) {
+    const task = WorkerTaskHandler.taskExecutors[taskName];
+    if (!task) {
+      throw new Error(`Unknown task: ${taskName}`);
+    }
+
+    return task.execute(param);
+  }
+}
+
+WorkerTaskHandler.registerTask(WorkerThreadsOperations.HEAVY_COMPUTATION, (payload: { iterations: number }) => {
+  let result = 0;
+  if (typeof payload.iterations !== 'number') {
+    return { message: WorkerThreadsOperations.HEAVY_COMPUTATION, data: { iterations: 0 } };
+  }
+
+  for (let i = 0; i < payload.iterations; i++) {
+    result += Math.sqrt(i);
+  }
+
+  return { message: WorkerThreadsOperations.HEAVY_COMPUTATION, data: { iterations: result } };
+});
+
+WorkerTaskHandler.registerTask(WorkerThreadsOperations.DATA_TRANSFORMATION, (payload: object) => {
+  return { message: WorkerThreadsOperations.DATA_TRANSFORMATION, data: payload };
+});
+
+parentPort?.on('message', async (message: { name: string; params: object }) => {
+  const { name, params } = message;
+
+  if (name === 'shutdown') {
     process.exit(0);
   }
 
   try {
-    const result = await WorkersInfrastructureTaskHandler.execute(task);
+    const result = WorkerTaskHandler.executeTask(name as WorkerThreadsOperations, params);
     parentPort?.postMessage({ success: true, result });
   } catch (error) {
-    parentPort?.postMessage({ success: false, error: error instanceof Error ? error.message : 'Unknown error' });
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    parentPort?.postMessage({ success: false, error: errorMessage });
   }
 });

@@ -3,54 +3,67 @@ import path from 'path';
 import { config } from 'dotenv';
 
 import { LoggerTracerInfrastructure } from 'infrastructure/logger-tracer.infrastructure';
-import { WorkerThreadsOperations } from 'domain/enums/worker-threads-operations.enum';
 import { WorkerThreadsTask } from 'core/types/worker-threads-task.type';
 
 config();
 
 export class WorkerThreadsInfrastructure {
-  static workerPool: Worker[] = [];
-  private static numThreads = Number(process.env.THREAD_WORKERS);
-  private static totalTasks = Number(process.env.HEAVY_COMPUTATION_TOTAL);
+  private static workerPool: Worker[] = [];
+  private static taskQueue: { task: WorkerThreadsTask; resolve: (value: unknown) => void; reject: (reason?: any) => void }[] = [];
+  private static numThreads = Number(process.env.MAX_WORKERS) || 4;
   private static workerFile = path.resolve(__dirname, process.env.WORKER_FILE_DIRECTION);
 
-  static createWorker (): Worker {
+  private static createWorker (): Worker {
     const worker = new Worker(this.workerFile);
-    this.workerPool.push(worker);
+
+    worker.on('message', (message: { success: boolean; result?: unknown; error?: string }) => {
+      const task = this.taskQueue.shift();
+      if (task) {
+        message.success ? task.resolve(message.result) : task.reject(new Error(message.error || 'Unknown error occurred'));
+      }
+      this.workerPool.push(worker);
+      this.processQueue();
+    });
+
+    worker.on('error', (error: Error) => {
+      LoggerTracerInfrastructure.log(`Worker thread error: ${error}`, 'error');
+      const task = this.taskQueue.shift();
+      if (task) {
+        task.reject(error);
+      }
+      worker.terminate();
+    });
+
     return worker;
   }
 
-  private static async spawnWorkerThread (task: WorkerThreadsTask) {
-    return new Promise((resolve, reject) => {
-      const worker = this.workerPool.pop() || this.createWorker();
+  private static processQueue () {
+    if (this.taskQueue.length > 0 && this.workerPool.length > 0) {
+      const worker = this.workerPool.pop();
 
-      worker.once('message', (message) => {
-        message.success ? resolve(message.result) : reject(new Error(message.error || 'Unknown error occurred'));
-        this.workerPool.push(worker);
-      });
-
-      worker.once('error', (error) => {
-        LoggerTracerInfrastructure.log(`Worker thread error: ${error}`, 'error');
-        reject(error);
-        worker.terminate();
-      });
-
-      worker.postMessage(task);
-    });
+      if (worker) {
+        const { task } = this.taskQueue[0];
+        worker.postMessage(task);
+      }
+    }
   }
 
-  static async executeHeavyTask () {
-    const total = Math.ceil(this.totalTasks / this.numThreads);
-    const tasks = Array.from({ length: this.numThreads }).map(() =>
-      this.spawnWorkerThread({ name: WorkerThreadsOperations.HEAVY_COMPUTATION, params: { total } })
-    );
+  static async executeHeavyTask (task: WorkerThreadsTask) {
+    return new Promise((resolve, reject) => {
+      this.taskQueue.push({ task, resolve, reject });
 
-    return Promise.all(tasks);
+      if (this.workerPool.length < this.numThreads && this.workerPool.length < this.taskQueue.length) {
+        this.workerPool.push(this.createWorker());
+      }
+
+      this.processQueue();
+    });
   }
 
   static shutdownWorkers () {
     LoggerTracerInfrastructure.log('Shutting down all worker threads...', 'info');
     this.workerPool.forEach(worker => worker.terminate());
     this.workerPool = [];
+    this.taskQueue = [];
   }
 }

@@ -3,7 +3,6 @@ import cluster from 'cluster';
 import { LoggerTracerInfrastructure } from 'infrastructure/logger-tracer.infrastructure';
 import { ClusterShutdownHelper } from 'application/helpers/cluster-shutdown.helper';
 import { handleProcessSignals } from 'application/helpers/utility-functions.helper';
-import { WorkerThreadsInfrastructure } from 'infrastructure/worker-threads.infrastructure';
 
 export class ClusterInfrastructure {
   static initialized = false;
@@ -18,8 +17,6 @@ export class ClusterInfrastructure {
     try {
       if (cluster.isPrimary) {
         this.setupPrimaryProcess();
-      } else {
-        WorkerThreadsInfrastructure.executeHeavyTask();
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';

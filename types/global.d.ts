@@ -10,7 +10,7 @@ declare namespace NodeJS {
     JWT_EXPIRES_IN: string;
     PASSPORT_JS_SESSION_SECRET_KEY: string;
     CLUSTER_WORKERS: string;
-    THREAD_WORKERS: string;
+    WORKER_THREADS: string;
     SHUT_DOWN_TIMER: string;
     SHUTDOWN_RETRIES: string;
     SHUTDOWN_RETRY_DELAY: string;
