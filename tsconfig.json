@@ -2,9 +2,7 @@
   "compilerOptions": {
     "target": "ES2022",
     "module": "commonjs",
-    "lib": [
-      "ES2022"
-    ],
+    "lib": ["ES2022"],
     "allowJs": false,
     "checkJs": false,
     "sourceMap": true,
@@ -15,10 +13,7 @@
     "moduleResolution": "node",
     "baseUrl": "src",
     "paths": {},
-    "types": [
-      "node",
-      "jest"
-    ],
+    "types": ["node", "jest"],
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "esModuleInterop": true,
@@ -27,10 +22,5 @@
     "forceConsistentCasingInFileNames": true
   },
   "include": ["src/**/*.ts", "types/global.d.ts", "types/express.d.ts"],
-  "exclude": [
-    "node_modules",
-    "migrations",
-    "scripts",
-    "test"
-  ]
+  "exclude": ["node_modules", "migrations", "scripts", "test"]
 }

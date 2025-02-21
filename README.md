@@ -279,10 +279,59 @@
 git clone git@github.com:yavarguliyev/invoices-hub.git
 ```
 
-## 2. Set Up Environment: Run existing docker-compose file to start RabbitMQ, Redis and Postgres SQL via the command:
+## 2. Set Up Environment: 
+
+#### The Docker setup is located at {main_root}/deployment/dev. For managing containers, we do not use the docker-compose up -d command directly. Instead, we use specific scripts to handle the container lifecycle.
+
+#### 1. To start the containers:
 
 ```javascript
-docker-compose up -d
+bash start.sh
+```
+
+#### 2. To stop the containers:
+
+```javascript
+bash stop.sh
+```
+
+#### 3. To remove the containers, images, and volumes:
+
+```javascript
+bash remove.sh 
+```
+
+## Environment Configuration
+
+* The .env file located in {main_root}/deployment/dev/.env is required for configuration.
+* You can copy the example file (.env.example) to create your own .env file.
+
+## Additional Setup (Optional)
+
+#### If you need to perform additional tasks like database migrations before starting the application (e.g., before running yarn start), you will need to uncomment and adjust the following part in the docker-compose.yml file:
+
+```javascript
+services:
+  # api:
+  #   container_name: invoices_hub
+  #   image: invoice_hub
+  #   build:
+  #     context: ../../
+  #     dockerfile: Dockerfile
+  #     args:
+  #       ENV_PATH: ./deployment/dev/.env
+  #   ports:
+  #     - "3000:3000"
+  #   env_file:
+  #     - ./.env
+  #   volumes:
+  #     - ../../invoice_hub:/app/invoice_hub
+  #   depends_on:
+  #     - postgres
+  #     - redis
+  #     - rabbitmq
+  #   restart: always
+  #   command: sh -c "yarn mup && yarn start"
 ```
 
 ## 3. Install dependencies:

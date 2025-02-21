@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  # api:
+  #   container_name: invoices_hub
+  #   image: invoice_hub
+  #   build:
+  #     context: ../../
+  #     dockerfile: Dockerfile
+  #     args:
+  #       ENV_PATH: ./deployment/dev/.env
+  #   ports:
+  #     - "3000:3000"
+  #   env_file:
+  #     - ./.env
+  #   volumes:
+  #     - ../../invoice_hub:/app/invoice_hub
+  #   depends_on:
+  #     - postgres
+  #     - redis
+  #     - rabbitmq
+  #   restart: always
+  #   command: sh -c "yarn mup && yarn start"
+
+  redis:
+    container_name: redis_container
+    image: redis:7.0
+    ports:
+      - "6379:6379"
+    command: ["redis-server", "--requirepass", "your_redis_password"]
+    restart: always
+    volumes:
+      - ./root/redis:/data
+
+  rabbitmq:
+    container_name: rabbitmq_container
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: your_rabbitmq_user
+      RABBITMQ_DEFAULT_PASS: your_rabbitmq_password
+    restart: always
+    volumes:
+      - ./root/rabbitmq:/var/lib/rabbitmq
+
+  postgres:
+    container_name: postgres_container
+    image: postgres:13.5-alpine
+    restart: always
+    env_file:
+      - ./.env
+    volumes:
+      - ./root/postgres/data:/var/lib/postgresql/data
+      - ./root/postgres/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
+    ports:
+      - "54320:5432"
