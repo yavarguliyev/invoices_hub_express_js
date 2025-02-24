@@ -14,8 +14,7 @@ services:
   #   env_file:
   #     - ./.env
   #   volumes:
-  #     - ../../:/app
-  #     - ../../app/node_modules
+  #     - ../../src:/app/src:delegated
   #   depends_on:
   #     - postgres
   #     - redis
