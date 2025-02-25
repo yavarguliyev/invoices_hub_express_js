@@ -325,7 +325,7 @@ services:
   #   env_file:
   #     - ./.env
   #   volumes:
-  #     - ../../invoice_hub:/app/invoice_hub
+  #     - ../../src:/app/src:delegated
   #   depends_on:
   #     - postgres
   #     - redis
