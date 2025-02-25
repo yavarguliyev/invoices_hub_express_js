@@ -1,7 +1,14 @@
 import 'reflect-metadata';
 import { DataSource } from 'typeorm';
 
+import { baseConfig } from '../../src/core/configs/datasource.config';
 import { DbConnectionInfrastructure } from '../../src/infrastructure/db-connection.infrastructure';
+
+jest.mock('../../src/core/configs/datasource.config', () => ({
+  getDataSourceConfig: jest.fn(() => ({
+    ...baseConfig, entities: []
+  }))
+}));
 
 jest.mock('typeorm', () => {
   const mockDataSource = {

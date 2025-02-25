@@ -1,7 +1,14 @@
 import 'dotenv/config';
 import { DataSource } from 'typeorm';
 
+import { baseConfig } from '../src/core/configs/datasource.config';
 import { AppDataSource } from '../src/data-source';
+
+jest.mock('../src/core/configs/datasource.config', () => ({
+  getDataSourceConfig: jest.fn(() => ({
+    ...baseConfig, entities: [], migrations: ['migrations/*.ts']
+  }))
+}));
 
 jest.mock('typeorm', () => {
   const mockDataSourceInstance = {
