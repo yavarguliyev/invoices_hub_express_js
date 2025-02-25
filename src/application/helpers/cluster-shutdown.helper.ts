@@ -7,11 +7,12 @@ import RabbitMQInfrastructure from 'infrastructure/rabbitmq.infrastructure';
 import { DbConnectionInfrastructure } from 'infrastructure/db-connection.infrastructure';
 import { WorkerThreadsInfrastructure } from 'infrastructure/worker-threads.infrastructure';
 import { RetryHelper } from 'application/helpers/retry.helper';
+import config from 'core/configs/app.config';
 
 export class ClusterShutdownHelper {
-  private static readonly shutdownTimeout = Number(process.env.SHUT_DOWN_TIMER);
-  private static readonly maxRetries = Number(process.env.SHUTDOWN_RETRIES);
-  private static readonly retryDelay = Number(process.env.SHUTDOWN_RETRY_DELAY);
+  private static readonly shutdownTimeout = config.SHUT_DOWN_TIMER;
+  private static readonly maxRetries = config.SHUTDOWN_RETRIES;
+  private static readonly retryDelay = config.SHUTDOWN_RETRY_DELAY;
 
   static async shutDown (httpServer: http.Server): Promise<void> {
     let shutdownTimer;

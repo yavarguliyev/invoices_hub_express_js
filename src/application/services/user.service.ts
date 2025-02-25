@@ -23,6 +23,7 @@ import { generateStrongPassword, queryResults } from 'application/helpers/utilit
 import { UpdateUserPasswordArgs } from 'core/inputs/update-user-password.args';
 import { DataLoaderInfrastructure } from 'infrastructure/data-loader.infrastructure';
 import User from 'domain/entities/user.entity';
+import config from 'core/configs/app.config';
 
 export interface IUserService {
   get (query: GetQueryResultsArgs): Promise<ResponseResults<UserDto>>;
@@ -87,7 +88,7 @@ export class UserService implements IUserService {
       throw new BadRequestError('User already exists with the provided email.', { errorField: userData.email });
     }
 
-    const userRole = await this.roleRepository.findOne({ where: { id: Number(process.env.STANDARD_ROLE_ID) } });
+    const userRole = await this.roleRepository.findOne({ where: { id: config.STANDARD_ROLE_ID } });
     if (!userRole) {
       throw new NotFoundError('Role not found.', { resourceId: roleId });
     }

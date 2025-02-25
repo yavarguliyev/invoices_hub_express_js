@@ -14,6 +14,8 @@ import { CompareValuesOptions } from 'domain/interfaces/compare-values-options.i
 import { QueryResultsOptions } from 'domain/interfaces/query-results-options.interface';
 import { CreateVersionedRouteOptions } from 'domain/interfaces/create-versioned-route-options.interface';
 import { GeneratePasswordOptions } from 'domain/interfaces/generate-password-options.interface';
+import config from 'core/configs/app.config';
+import passwordConfig from 'core/configs/password.config';
 
 export const safelyInitializeService = async ({ serviceName, initializeFn }: ServiceInitializationOptions): Promise<void> => {
   try {
@@ -52,7 +54,7 @@ export const registerService = <T> ({ id, service, isSingleton = true }: Registe
 };
 
 export const generateCacheKey = ({ keyTemplate, args }: GenerateCacheKeyOptions): RedisCacheKeys => {
-  const ttl = Number(process.env.REDIS_DEFAULT_CACHE_TTL) || 3600;
+  const ttl = config.REDIS_DEFAULT_CACHE_TTL;
   const argsHash = crypto.createHash('md5').update(JSON.stringify(args)).digest('hex');
   const cacheKey = `${keyTemplate}:${argsHash}`;
 
@@ -116,11 +118,11 @@ export const createVersionedRoute = ({ controllerPath, version }: CreateVersione
   return `/api/${version}${controllerPath}`;
 };
 
-export const generateStrongPassword = ({ length = Number(process.env.PASSWORD_LENGTH) }: GeneratePasswordOptions): string => {
-  const uppercase = process.env.PASSWORD_UPPERCASE;
-  const lowercase = process.env.PASSWORD_LOWERCASE;
-  const numbers = process.env.PASSWORD_NUMBERS;
-  const specialChars = process.env.PASSWORD_SPECIAL;
+export const generateStrongPassword = ({ length = passwordConfig.PASSWORD_LENGTH }: GeneratePasswordOptions): string => {
+  const uppercase = passwordConfig.PASSWORD_UPPERCASE;
+  const lowercase = passwordConfig.PASSWORD_LOWERCASE;
+  const numbers = passwordConfig.PASSWORD_NUMBERS;
+  const specialChars = passwordConfig.PASSWORD_SPECIAL;
 
   const allChars = uppercase + lowercase + numbers + specialChars;
   const getRandomChar = (charset: string) => charset[Math.floor(Math.random() * charset.length)];

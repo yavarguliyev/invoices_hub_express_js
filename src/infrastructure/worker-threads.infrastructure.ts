@@ -1,17 +1,15 @@
 import { Worker } from 'worker_threads';
 import path from 'path';
-import { config } from 'dotenv';
 
 import { LoggerTracerInfrastructure } from 'infrastructure/logger-tracer.infrastructure';
 import { WorkerThreadsTask } from 'core/types/worker-threads-task.type';
-
-config();
+import appConfig from 'core/configs/app.config';
 
 export class WorkerThreadsInfrastructure {
   private static workerPool: Worker[] = [];
   private static taskQueue: { task: WorkerThreadsTask; resolve: (value: unknown) => void; reject: (reason?: any) => void }[] = [];
-  private static numThreads = Number(process.env.MAX_WORKERS) || 4;
-  private static workerFile = path.resolve(__dirname, process.env.WORKER_FILE_DIRECTION);
+  private static numThreads = appConfig.MAX_WORKERS;
+  private static workerFile = path.resolve(__dirname, appConfig.WORKER_FILE_DIRECTION);
 
   private static createWorker (): Worker {
     const worker = new Worker(this.workerFile);

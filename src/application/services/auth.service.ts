@@ -9,6 +9,7 @@ import { NotAuthorizedError } from 'core/errors';
 import { LoginResponse } from 'core/types/login-response.type';
 import { GenerateLoginResponse } from 'core/types/generate-login-response.type';
 import { LoggerTracerInfrastructure } from 'infrastructure/logger-tracer.infrastructure';
+import passportConfig from 'core/configs/passport.config';
 
 export interface IAuthService {
   signin (args: SigninArgs): Promise<LoginResponse>;
@@ -62,8 +63,8 @@ export class AuthService implements IAuthService {
   private async generateLoginResponse ({ id, email }: GenerateLoginResponse) {
     const payload = { id, email };
 
-    const secretKey = process.env.JWT_SECRET_KEY!;
-    const expiresIn = process.env.JWT_EXPIRES_IN!;
+    const secretKey = passportConfig.JWT_SECRET_KEY;
+    const expiresIn = passportConfig.JWT_EXPIRES_IN;
 
     const validatedExpiresIn = !isNaN(Number(expiresIn)) ? Number(expiresIn) : (expiresIn as SignOptions['expiresIn']);
 

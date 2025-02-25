@@ -16,7 +16,7 @@ export class HealthcheckService implements IHealthcheckService {
     };
 
     // await WorkerThreadsInfrastructure.executeHeavyTask({ name: WorkerThreadsOperations.DATA_TRANSFORMATION, params: services });
-    // await WorkerThreadsInfrastructure.executeHeavyTask({ name: WorkerThreadsOperations.HEAVY_COMPUTATION, params: { iterations: Number(process.env.HEAVY_COMPUTATION_TOTAL) } });
+    // await WorkerThreadsInfrastructure.executeHeavyTask({ name: WorkerThreadsOperations.HEAVY_COMPUTATION, params: { iterations: Number(config.HEAVY_COMPUTATION_TOTAL) } });
 
     return {
       message: 'OK',

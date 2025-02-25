@@ -3,6 +3,7 @@ import cluster from 'cluster';
 import { LoggerTracerInfrastructure } from 'infrastructure/logger-tracer.infrastructure';
 import { ClusterShutdownHelper } from 'application/helpers/cluster-shutdown.helper';
 import { handleProcessSignals } from 'application/helpers/utility-functions.helper';
+import config from 'core/configs/app.config';
 
 export class ClusterInfrastructure {
   static initialized = false;
@@ -27,7 +28,7 @@ export class ClusterInfrastructure {
   }
 
   private static setupPrimaryProcess (): void {
-    const numCPUs = Number(process.env.CLUSTER_WORKERS);
+    const numCPUs = config.CLUSTER_WORKERS;
     this.forkWorkers(numCPUs);
     handleProcessSignals({ shutdownCallback: ClusterShutdownHelper.shutdownWorkers, callbackArgs: [] });
   }

@@ -17,6 +17,8 @@ import { AuthStrategiesInfrastructure } from 'infrastructure/auth-strategies.inf
 import { authorizationChecker, currentUserChecker } from 'application/helpers/authorization-checker.helper';
 import { getSchemasList } from 'application/helpers/swagger-schemas.helper';
 import { HelmetMiddleware } from 'core/middlewares/helmet.middleware';
+import passportConfig from 'core/configs/passport.config';
+import swaggerConfig from 'core/configs/swagger.config';
 
 export interface IExpressServerInfrastructure {
   get(): Promise<Express>;
@@ -53,21 +55,21 @@ export class ExpressServerInfrastructure implements IExpressServerInfrastructure
       defaultErrorHandler: false
     });
 
-    app.use(session({ secret: process.env.PASSPORT_JS_SESSION_SECRET_KEY!, resave: false, saveUninitialized: false }));
+    app.use(session({ secret: passportConfig.PASSPORT_JS_SESSION_SECRET_KEY, resave: false, saveUninitialized: false }));
     app.use(passport.initialize());
     app.use(passport.session());
 
     const storage = getMetadataArgsStorage();
     const openAPISpec = routingControllersToSpec(storage);
 
-    const swaggerMetadataOptions = JSON.parse(process.env.SWAGGER_METADATA_SCHEMA_OPTION!);
+    const swaggerMetadataOptions = JSON.parse(swaggerConfig.SWAGGER_METADATA_SCHEMA_OPTION);
     const validationMetadatasToSchema = validationMetadatasToSchemas(swaggerMetadataOptions);
     const schemasList = getSchemasList();
 
     const schemas = { ...validationMetadatasToSchema, ...schemasList };
 
-    const components = { ...JSON.parse(process.env.SWAGGER_COMPONENTS_OPTION!), schemas };
-    const security = JSON.parse(process.env.SWAGGER_SECURITY_OPTION!);
+    const components = { ...JSON.parse(swaggerConfig.SWAGGER_COMPONENTS_OPTION), schemas };
+    const security = JSON.parse(swaggerConfig.SWAGGER_SECURITY_OPTION);
 
     app.use('/api-docs', swaggerUi.serve, swaggerUi.setup({ ...openAPISpec, components, security }));
 

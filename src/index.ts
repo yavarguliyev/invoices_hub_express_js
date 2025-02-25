@@ -1,5 +1,4 @@
 import 'reflect-metadata';
-import { config } from 'dotenv';
 import cluster from 'cluster';
 import { Container } from 'typedi';
 import http from 'http';
@@ -13,8 +12,7 @@ import { LoggerTracerInfrastructure } from 'infrastructure/logger-tracer.infrast
 import { initializeSubscribers } from 'domain/event-handlers';
 import { handleProcessSignals } from 'application/helpers/utility-functions.helper';
 import { ExpressServerInfrastructure } from 'infrastructure/express-server.infrastructure';
-
-config();
+import config from 'core/configs/app.config';
 
 const initializeDependencyInjections = async (): Promise<void> => {
   configureContainers();
@@ -34,15 +32,15 @@ const initializeServer = async (): Promise<http.Server> => {
   const app = await Container.get(ExpressServerInfrastructure).get();
   const server = http.createServer(app);
 
-  server.keepAliveTimeout = Number(process.env.KEEP_ALIVE_TIMEOUT);
-  server.headersTimeout = Number(process.env.HEADERS_TIMEOUT);
+  server.keepAliveTimeout = config.KEEP_ALIVE_TIMEOUT;
+  server.headersTimeout = config.HEADERS_TIMEOUT;
 
   return server;
 };
 
 const startServer = (httpServer: http.Server, port: number): void => {
   httpServer.listen(port, () => LoggerTracerInfrastructure.log(`Server running on port ${port}`, 'info'));
-  httpServer.timeout = parseInt(process.env.SERVER_TIMEOUT!);
+  httpServer.timeout = config.SERVER_TIMEOUT;
 };
 
 const main = async (): Promise<void> => {
@@ -54,9 +52,8 @@ const main = async (): Promise<void> => {
       await initializeInfrastructureServices();
 
       const appServer = await initializeServer();
-      const port = Number(process.env.PORT);
 
-      startServer(appServer, port);
+      startServer(appServer, config.PORT);
 
       handleProcessSignals({ shutdownCallback: ClusterShutdownHelper.shutDown.bind(ClusterShutdownHelper), callbackArgs: [appServer] });
     }
