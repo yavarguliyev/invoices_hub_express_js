@@ -2,6 +2,9 @@ import { DbConnectionInfrastructure } from 'infrastructure/db-connection.infrast
 import RedisInfrastructure from 'infrastructure/redis.infrastructure';
 import RabbitMQInfrastructure from 'infrastructure/rabbitmq.infrastructure';
 import { HealthcheckResponse } from 'core/types/healthcheck-response.type';
+// import { WorkerThreadsInfrastructure } from 'infrastructure/worker-threads.infrastructure';
+// import { WorkerThreadsOperations } from 'domain/enums/worker-threads-operations.enum';
+// import appConfig from 'core/configs/app.config';
 
 export interface IHealthcheckService {
   healthcheck (): Promise<HealthcheckResponse>;
@@ -15,8 +18,8 @@ export class HealthcheckService implements IHealthcheckService {
       rabbitMQ: RabbitMQInfrastructure.isConnected()
     };
 
-    // await WorkerThreadsInfrastructure.executeHeavyTask({ name: WorkerThreadsOperations.DATA_TRANSFORMATION, params: services });
-    // await WorkerThreadsInfrastructure.executeHeavyTask({ name: WorkerThreadsOperations.HEAVY_COMPUTATION, params: { iterations: Number(config.HEAVY_COMPUTATION_TOTAL) } });
+    // const results = await WorkerThreadsInfrastructure.executeHeavyTask({ name: WorkerThreadsOperations.DATA_TRANSFORMATION, params: services });
+    // await WorkerThreadsInfrastructure.executeHeavyTask({ name: WorkerThreadsOperations.HEAVY_COMPUTATION, params: { iterations: Number(appConfig.HEAVY_COMPUTATION_TOTAL) } });
 
     return {
       message: 'OK',

@@ -2,7 +2,7 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const config = {
+const appConfig = {
   NODE_ENV: process.env.NODE_ENV,
   PORT: Number(process.env.PORT),
   KEEP_ALIVE_TIMEOUT: Number(process.env.KEEP_ALIVE_TIMEOUT),
@@ -19,4 +19,4 @@ const config = {
   WORKER_FILE_DIRECTION: process.env.WORKER_FILE_DIRECTION
 };
 
-export default config;
+export default appConfig;

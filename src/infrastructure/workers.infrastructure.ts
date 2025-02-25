@@ -37,6 +37,7 @@ class WorkerTaskHandler {
 
 WorkerTaskHandler.registerTask(WorkerThreadsOperations.HEAVY_COMPUTATION, (payload: { iterations: number }) => {
   let result = 0;
+
   if (typeof payload.iterations !== 'number') {
     return { message: WorkerThreadsOperations.HEAVY_COMPUTATION, data: { iterations: 0 } };
   }
