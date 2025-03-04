@@ -8,7 +8,7 @@ import passport from 'passport';
 
 import { HealthcheckController } from 'api/v1/healthcheck.controller';
 import { UsersController } from 'api/v1/users.controller';
-import { ErrorHandlerMiddleware } from 'core/middlewares/error-handler.middleware';
+import { GlobalErrorHandlerMiddleware, globalErrorHandler } from 'core/middlewares/error-handler.middleware';
 import { AuthController } from 'api/v1/auth.controller';
 import { InvoicesController } from 'api/v1/invoices.controller';
 import { RolesController } from 'api/v1/roles.controller';
@@ -19,6 +19,7 @@ import { getSchemasList } from 'application/helpers/swagger-schemas.helper';
 import { HelmetMiddleware } from 'core/middlewares/helmet.middleware';
 import passportConfig from 'core/configs/passport.config';
 import swaggerConfig from 'core/configs/swagger.config';
+import { NotFoundError } from 'core/errors';
 
 export interface IExpressServerInfrastructure {
   get(): Promise<Express>;
@@ -49,7 +50,7 @@ export class ExpressServerInfrastructure implements IExpressServerInfrastructure
 
     const app = createExpressServer({
       controllers,
-      middlewares: [HelmetMiddleware, ErrorHandlerMiddleware],
+      middlewares: [HelmetMiddleware, GlobalErrorHandlerMiddleware],
       authorizationChecker,
       currentUserChecker,
       defaultErrorHandler: false
@@ -72,6 +73,12 @@ export class ExpressServerInfrastructure implements IExpressServerInfrastructure
     const security = JSON.parse(swaggerConfig.SWAGGER_SECURITY_OPTION);
 
     app.use('/api-docs', swaggerUi.serve, swaggerUi.setup({ ...openAPISpec, components, security }));
+
+    app.all('*', (req: Request) => {
+      throw new NotFoundError(`Cannot find ${req.method} on ${req.url}`);
+    });
+
+    app.use(globalErrorHandler);
 
     return app;
   }

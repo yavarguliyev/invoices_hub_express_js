@@ -8,7 +8,7 @@ import { UserService } from 'application/services/user.service';
 import { UsersController } from 'api/v1/users.controller';
 import { HealthcheckController } from 'api/v1/healthcheck.controller';
 import { ExpressServerInfrastructure } from 'infrastructure/express-server.infrastructure';
-import { ErrorHandlerMiddleware } from 'core/middlewares/error-handler.middleware';
+import { GlobalErrorHandlerMiddleware } from 'core/middlewares/error-handler.middleware';
 import { registerService } from 'application/helpers/utility-functions.helper';
 import { DbConnectionInfrastructure } from 'infrastructure/db-connection.infrastructure';
 import { InvoicesController } from 'api/v1/invoices.controller';
@@ -56,7 +56,7 @@ export function configureInfrastructures () {
 
 export function configureMiddlewares () {
   Container.set(HelmetMiddleware, new HelmetMiddleware());
-  Container.set(ErrorHandlerMiddleware, new ErrorHandlerMiddleware());
+  Container.set(GlobalErrorHandlerMiddleware, new GlobalErrorHandlerMiddleware());
 };
 
 export function configureControllersAndServices () {
