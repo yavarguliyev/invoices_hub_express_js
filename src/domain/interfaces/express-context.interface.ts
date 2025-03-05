@@ -2,15 +2,10 @@ import { Request, Response } from 'express';
 
 import { UserDto } from 'domain/dto/user.dto';
 
-export interface TokenPayload {
+export interface JwtPayload {
   id: number;
   email: string;
   role: string;
-};
-
-export interface JwtPayload {
-  sub: string;
-  email: string;
   iat?: number;
   exp?: number;
 };
@@ -23,7 +18,7 @@ export interface ExpressContext {
   redisData?: { eventChannel: string, responseChannel: string };
   request: Request;
   response?: Response;
-  tokenData: TokenPayload;
+  tokenData: JwtPayload;
   currentUser?: UserDto;
   token: string;
 };

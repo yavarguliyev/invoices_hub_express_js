@@ -1,4 +1,5 @@
 export type GenerateLoginResponse = {
   id: number;
-  email: string
+  email: string;
+  role: string;
 }

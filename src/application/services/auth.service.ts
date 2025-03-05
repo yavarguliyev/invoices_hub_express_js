@@ -35,7 +35,9 @@ export class AuthService implements IAuthService {
       throw new NotAuthorizedError();
     }
 
-    return await this.generateLoginResponse({ id: user.id, email });
+    const role = await user.role;
+
+    return await this.generateLoginResponse({ id: user.id, email, role: role.name });
   }
 
   async signout (accesToken: string) {
@@ -60,15 +62,15 @@ export class AuthService implements IAuthService {
     return true;
   }
 
-  private async generateLoginResponse ({ id, email }: GenerateLoginResponse) {
-    const payload = { id, email };
+  private async generateLoginResponse ({ id, email, role }: GenerateLoginResponse) {
+    const payload = { id, email, role };
 
     const secretKey = passportConfig.JWT_SECRET_KEY;
     const expiresIn = passportConfig.JWT_EXPIRES_IN;
 
     const validatedExpiresIn = !isNaN(Number(expiresIn)) ? Number(expiresIn) : (expiresIn as SignOptions['expiresIn']);
 
-    const signOptions: SignOptions = { expiresIn: validatedExpiresIn };
+    const signOptions: SignOptions = { expiresIn: validatedExpiresIn, algorithm: 'HS256' };
     const accessToken = jwt.sign(payload, secretKey, signOptions);
     const response: LoginResponse = { accessToken, payload, results: ResultMessage.SUCCEED };
 

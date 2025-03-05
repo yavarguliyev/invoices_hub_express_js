@@ -6,14 +6,16 @@ import { ContainerItems } from 'application/ioc/static/container-items';
 import { IUserService } from 'application/services/user.service';
 import { NotAuthorizedError } from 'core/errors';
 import { UserDto } from 'domain/dto/user.dto';
-import { AuthenticationInfo, ExpressContext, TokenPayload } from 'domain/interfaces/express-context.interface';
+import { AuthenticationInfo, ExpressContext, JwtPayload } from 'domain/interfaces/express-context.interface';
 
-export const getTokenData = (req: Request): Promise<TokenPayload> =>
+export const getTokenData = (req: Request): Promise<JwtPayload> =>
   new Promise((resolve, reject) => {
-    passport.authenticate('jwt', { session: false, failureFlash: false, failWithError: true }, (err: Error, payload: TokenPayload, info: AuthenticationInfo) => {
+    passport.authenticate('jwt', { session: false, failureFlash: false, failWithError: true }, (err: Error, payload: JwtPayload, info: AuthenticationInfo) => {
       if (err) reject(err);
-      if (payload) resolve(payload);
-      if (info) reject(new NotAuthorizedError());
+      if (!payload || (payload.exp && Date.now() >= payload.exp * 1000)) return reject(new NotAuthorizedError());
+      if (info) return reject(new NotAuthorizedError());
+
+      resolve({ id: payload.id, email: payload.email, role: payload.role });
     }
     )(req);
 });
@@ -52,8 +54,10 @@ export const currentUserChecker = async (action: Action): Promise<UserDto> => {
 
 export const authorizationChecker = async (action: Action, roles: string[]): Promise<boolean> => {
   const context = await generateExpressContext(action);
+  const currentUserRoleName = context?.currentUser?.role?.name;
+  const role = context.tokenData.role;
 
-  if (!context?.currentUser?.role?.name || roles.length === 0 || !roles.includes(context?.currentUser.role.name)) {
+  if (!currentUserRoleName || roles.length === 0 || !roles.includes(role)) {
     throw new NotAuthorizedError();
   }
 

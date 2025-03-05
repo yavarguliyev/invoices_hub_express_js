@@ -13,6 +13,6 @@ export class JwtAuthStrategy extends BaseAuthStrategy {
   }
 
   private jwtStrategyOptions (): StrategyOptionsWithoutRequest {
-    return { jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(), secretOrKey: passportConfig.JWT_SECRET_KEY };
+    return { jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(), secretOrKey: passportConfig.JWT_SECRET_KEY, algorithms: ['HS256'] };
   }
 };
