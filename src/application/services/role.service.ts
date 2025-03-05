@@ -1,13 +1,13 @@
 import { Container } from 'typedi';
 
-import { RoleRepository } from 'domain/repositories/role.repository';
+import { queryResults } from 'application/helpers/utility-functions.helper';
 import { RedisDecorator } from 'core/decorators/redis.decorator';
 import { REDIS_CACHE_KEYS } from 'core/types/decorator.types';
-import { RoleDto } from 'domain/dto/role.dto';
-import { ResultMessage } from 'domain/enums/result-message.enum';
 import { ResponseResults } from 'core/types/response-results.type';
 import { GetQueryResultsArgs } from 'core/inputs/get-query-results.args';
-import { queryResults } from 'application/helpers/utility-functions.helper';
+import { RoleRepository } from 'domain/repositories/role.repository';
+import { RoleDto } from 'domain/dto/role.dto';
+import { ResultMessage } from 'domain/enums/result-message.enum';
 
 export interface IRoleService {
   get (query: GetQueryResultsArgs): Promise<ResponseResults<RoleDto>>;

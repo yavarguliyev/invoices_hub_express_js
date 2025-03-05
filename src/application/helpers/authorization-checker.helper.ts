@@ -1,12 +1,12 @@
 import { Action } from 'routing-controllers';
 import passport from 'passport';
 
-import { NotAuthorizedError } from 'core/errors';
-import { AuthenticationInfo, ExpressContext, TokenPayload } from 'domain/interfaces/express-context.interface';
 import { ContainerHelper } from 'application/ioc/helpers/container.helper';
-import { IUserService } from 'application/services/user.service';
 import { ContainerItems } from 'application/ioc/static/container-items';
+import { IUserService } from 'application/services/user.service';
+import { NotAuthorizedError } from 'core/errors';
 import { UserDto } from 'domain/dto/user.dto';
+import { AuthenticationInfo, ExpressContext, TokenPayload } from 'domain/interfaces/express-context.interface';
 
 export const getTokenData = (req: Request): Promise<TokenPayload> =>
   new Promise((resolve, reject) => {

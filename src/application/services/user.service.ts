@@ -3,27 +3,27 @@ import { plainToInstance } from 'class-transformer';
 import bcrypt from 'bcrypt';
 import DataLoader from 'dataloader';
 
-import { EVENTS } from 'domain/enums/events.enum';
+import { generateStrongPassword, queryResults } from 'application/helpers/utility-functions.helper';
 import { REDIS_CACHE_KEYS } from 'core/types/decorator.types';
 import { RedisDecorator } from 'core/decorators/redis.decorator';
 import { EventPublisherDecorator } from 'core/decorators/event-publisher.decorator';
-import { UserRepository } from 'domain/repositories/user.repository';
-import { RoleRepository } from 'domain/repositories/role.repository';
 import { GetUserArgs } from 'core/inputs/get-user.args';
 import { CreateUserArgs } from 'core/inputs/create-user.args';
 import { UpdateUserArgs } from 'core/inputs/update-user.args';
 import { DeleteUserArgs } from 'core/inputs/delete-user.args';
-import { ResultMessage } from 'domain/enums/result-message.enum';
-import { UserDto } from 'domain/dto/user.dto';
 import { NotFoundError, BadRequestError } from 'core/errors';
 import { ResponseResults } from 'core/types/response-results.type';
-import { RoleDto } from 'domain/dto/role.dto';
 import { GetQueryResultsArgs } from 'core/inputs/get-query-results.args';
-import { generateStrongPassword, queryResults } from 'application/helpers/utility-functions.helper';
 import { UpdateUserPasswordArgs } from 'core/inputs/update-user-password.args';
-import { DataLoaderInfrastructure } from 'infrastructure/data-loader.infrastructure';
-import User from 'domain/entities/user.entity';
 import config from 'core/configs/app.config';
+import { EVENTS } from 'domain/enums/events.enum';
+import { UserRepository } from 'domain/repositories/user.repository';
+import { RoleRepository } from 'domain/repositories/role.repository';
+import { ResultMessage } from 'domain/enums/result-message.enum';
+import { UserDto } from 'domain/dto/user.dto';
+import { RoleDto } from 'domain/dto/role.dto';
+import User from 'domain/entities/user.entity';
+import { DataLoaderInfrastructure } from 'infrastructure/data-loader.infrastructure';
 
 export interface IUserService {
   get (query: GetQueryResultsArgs): Promise<ResponseResults<UserDto>>;

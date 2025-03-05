@@ -1,8 +1,8 @@
 import { parentPort } from 'worker_threads';
 
-import { WorkerThreadsOperations } from 'domain/enums/worker-threads-operations.enum';
 import { Payload } from 'core/types/worker-threads-operations.type';
 import { Task } from 'domain/interfaces/worker-threads-operations.interface';
+import { WorkerThreadsOperations } from 'domain/enums/worker-threads-operations.enum';
 
 class GenericTask<P extends object, R extends Payload> implements Task<P, R> {
   private readonly operation: string;

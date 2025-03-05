@@ -1,13 +1,9 @@
 import { ExtractJwt, Strategy, StrategyOptionsWithoutRequest, VerifiedCallback } from 'passport-jwt';
 
-import AuthStrategyType from 'core/types/auth-strategies.type';
-import { BaseAuthStrategy } from 'application/helpers/auth-strategies.helper.ts/base-auth-strategy';
-import { JwtPayload } from 'domain/interfaces/express-context.interface';
+import { BaseAuthStrategy } from 'application/helpers/auth-strategies.helper/base-auth-strategy';
 import passportConfig from 'core/configs/passport.config';
-
-export interface IBaseAuthStrategy {
-  isTypeOfAuthStrategy (options: AuthStrategyType): boolean;
-};
+import { AuthStrategyType } from 'domain/enums/auth-strategies.enum';
+import { JwtPayload } from 'domain/interfaces/express-context.interface';
 
 export class JwtAuthStrategy extends BaseAuthStrategy {
   currentStrategy: AuthStrategyType = AuthStrategyType.JWT;

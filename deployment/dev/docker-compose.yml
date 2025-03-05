@@ -20,7 +20,7 @@ services:
   #     - redis
   #     - rabbitmq
   #   restart: always
-  #   command: sh -c "yarn mup && yarn start"
+  #   command: sh -c "yarn mup && yarn test && yarn start"
 
   redis:
     container_name: redis_container

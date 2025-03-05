@@ -1,7 +1,7 @@
-import { DbConnectionInfrastructure } from 'infrastructure/db-connection.infrastructure';
+import { HealthcheckResponse } from 'core/types/healthcheck-response.type';
 import RedisInfrastructure from 'infrastructure/redis.infrastructure';
 import RabbitMQInfrastructure from 'infrastructure/rabbitmq.infrastructure';
-import { HealthcheckResponse } from 'core/types/healthcheck-response.type';
+import { DbConnectionInfrastructure } from 'infrastructure/db-connection.infrastructure';
 // import { WorkerThreadsInfrastructure } from 'infrastructure/worker-threads.infrastructure';
 // import { WorkerThreadsOperations } from 'domain/enums/worker-threads-operations.enum';
 // import appConfig from 'core/configs/app.config';

@@ -3,16 +3,16 @@ import cluster from 'cluster';
 import { Container } from 'typedi';
 import http from 'http';
 
-import { configureRepositories, configureControllersAndServices, configureContainers, configureInfrastructures, configureMiddlewares } from 'application/ioc/bindings';
 import { ClusterShutdownHelper } from 'application/helpers/cluster-shutdown.helper';
+import { handleProcessSignals } from 'application/helpers/utility-functions.helper';
+import { configureRepositories, configureControllersAndServices, configureContainers, configureInfrastructures, configureMiddlewares } from 'application/ioc/bindings';
+import config from 'core/configs/app.config';
+import { initializeSubscribers } from 'domain/event-handlers';
 import RedisInfrastructure from 'infrastructure/redis.infrastructure';
 import RabbitMQInfrastructure from 'infrastructure/rabbitmq.infrastructure';
 import { ClusterInfrastructure } from 'infrastructure/cluster.infrastructure';
 import { LoggerTracerInfrastructure } from 'infrastructure/logger-tracer.infrastructure';
-import { initializeSubscribers } from 'domain/event-handlers';
-import { handleProcessSignals } from 'application/helpers/utility-functions.helper';
 import { ExpressServerInfrastructure } from 'infrastructure/express-server.infrastructure';
-import config from 'core/configs/app.config';
 
 const initializeDependencyInjections = async (): Promise<void> => {
   configureContainers();

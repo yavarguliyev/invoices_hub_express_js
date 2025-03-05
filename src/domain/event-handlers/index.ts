@@ -1,5 +1,5 @@
-import RabbitMQInfrastructure from 'infrastructure/rabbitmq.infrastructure';
 import { EVENTS } from 'domain/enums/events.enum';
+import RabbitMQInfrastructure from 'infrastructure/rabbitmq.infrastructure';
 import { LoggerTracerInfrastructure } from 'infrastructure/logger-tracer.infrastructure';
 
 export const handleEvent = async <T> (event: EVENTS, message: T) => {

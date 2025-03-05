@@ -2,10 +2,10 @@ import { Entity, Column, ManyToOne, Index, BeforeInsert, BeforeRemove, JoinColum
 import { IsEmail, IsString, Length } from 'class-validator';
 import bcrypt from 'bcrypt';
 
+import { PasswordStrengthDecorator } from 'core/decorators/password-strength.decorator';
 import BaseEntity from 'domain/entities/base.entity';
 import Role from 'domain/entities/role.entity';
 import { Entities } from 'domain/enums/entities.enum';
-import { PasswordStrengthDecorator } from 'core/decorators/password-strength.decorator';
 import Invoice from 'domain/entities/invoice.entity';
 import Order from 'domain/entities/order.entity';
 

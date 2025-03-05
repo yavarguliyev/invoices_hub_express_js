@@ -1,9 +1,9 @@
 import { Worker } from 'worker_threads';
 import path from 'path';
 
-import { LoggerTracerInfrastructure } from 'infrastructure/logger-tracer.infrastructure';
 import { WorkerThreadsTask } from 'core/types/worker-threads-task.type';
 import appConfig from 'core/configs/app.config';
+import { LoggerTracerInfrastructure } from 'infrastructure/logger-tracer.infrastructure';
 
 export class WorkerThreadsInfrastructure {
   private static workerPool: Worker[] = [];

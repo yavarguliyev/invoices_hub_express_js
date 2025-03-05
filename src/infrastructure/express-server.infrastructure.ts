@@ -7,19 +7,19 @@ import session from 'express-session';
 import passport from 'passport';
 
 import { HealthcheckController } from 'api/v1/healthcheck.controller';
-import { UsersController } from 'api/v1/users.controller';
-import { GlobalErrorHandlerMiddleware, globalErrorHandler } from 'core/middlewares/error-handler.middleware';
 import { AuthController } from 'api/v1/auth.controller';
 import { InvoicesController } from 'api/v1/invoices.controller';
-import { RolesController } from 'api/v1/roles.controller';
 import { OrdersController } from 'api/v1/orders.controller';
-import { AuthStrategiesInfrastructure } from 'infrastructure/auth-strategies.infrastructure';
+import { RolesController } from 'api/v1/roles.controller';
+import { UsersController } from 'api/v1/users.controller';
 import { authorizationChecker, currentUserChecker } from 'application/helpers/authorization-checker.helper';
 import { getSchemasList } from 'application/helpers/swagger-schemas.helper';
+import { GlobalErrorHandlerMiddleware, globalErrorHandler } from 'core/middlewares/error-handler.middleware';
 import { HelmetMiddleware } from 'core/middlewares/helmet.middleware';
 import passportConfig from 'core/configs/passport.config';
 import swaggerConfig from 'core/configs/swagger.config';
 import { NotFoundError } from 'core/errors';
+import { AuthStrategiesInfrastructure } from 'infrastructure/auth-strategies.infrastructure';
 
 export interface IExpressServerInfrastructure {
   get(): Promise<Express>;

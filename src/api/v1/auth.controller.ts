@@ -1,12 +1,12 @@
 import { Body, HeaderParam, JsonController, Post } from 'routing-controllers';
 import { OpenAPI } from 'routing-controllers-openapi';
 
+import { swaggerSchemas } from 'application/helpers/swagger-schemas.helper';
 import { createVersionedRoute } from 'application/helpers/utility-functions.helper';
 import { ContainerHelper } from 'application/ioc/helpers/container.helper';
 import { ContainerItems } from 'application/ioc/static/container-items';
 import { IAuthService } from 'application/services/auth.service';
 import { SigninArgs } from 'core/inputs/signin.args';
-import { swaggerSchemas } from 'application/helpers/swagger-schemas.helper';
 
 @JsonController(createVersionedRoute({ controllerPath: '/auth', version: 'v1' }))
 export class AuthController {

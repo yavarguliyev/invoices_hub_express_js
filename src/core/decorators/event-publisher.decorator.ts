@@ -1,6 +1,6 @@
+import { EventDecoratorOption } from 'core/types/decorator.types';
 import RedisInfrastructure from 'infrastructure/redis.infrastructure';
 import RabbitMQInfrastructure from 'infrastructure/rabbitmq.infrastructure';
-import { EventDecoratorOption } from 'core/types/decorator.types';
 
 export function EventPublisherDecorator<T extends (...args: unknown[]) => Promise<unknown>>(options: EventDecoratorOption) {
   return function (_target: object, _propertyKey: string, descriptor: PropertyDescriptor) {

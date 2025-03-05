@@ -1,13 +1,13 @@
 import http from 'http';
 import cluster from 'cluster';
 
-import { LoggerTracerInfrastructure } from 'infrastructure/logger-tracer.infrastructure';
-import RedisInfrastructure from 'infrastructure/redis.infrastructure';
-import RabbitMQInfrastructure from 'infrastructure/rabbitmq.infrastructure';
-import { DbConnectionInfrastructure } from 'infrastructure/db-connection.infrastructure';
-import { WorkerThreadsInfrastructure } from 'infrastructure/worker-threads.infrastructure';
 import { RetryHelper } from 'application/helpers/retry.helper';
 import config from 'core/configs/app.config';
+import RedisInfrastructure from 'infrastructure/redis.infrastructure';
+import RabbitMQInfrastructure from 'infrastructure/rabbitmq.infrastructure';
+import { LoggerTracerInfrastructure } from 'infrastructure/logger-tracer.infrastructure';
+import { DbConnectionInfrastructure } from 'infrastructure/db-connection.infrastructure';
+import { WorkerThreadsInfrastructure } from 'infrastructure/worker-threads.infrastructure';
 
 export class ClusterShutdownHelper {
   private static readonly shutdownTimeout = config.SHUT_DOWN_TIMER;

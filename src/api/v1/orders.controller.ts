@@ -1,15 +1,15 @@
 import { JsonController, Get, Authorized, QueryParams, CurrentUser, Post, Patch, Body, Param } from 'routing-controllers';
 import { OpenAPI } from 'routing-controllers-openapi';
 
+import { swaggerSchemas } from 'application/helpers/swagger-schemas.helper';
 import { createVersionedRoute } from 'application/helpers/utility-functions.helper';
 import { ContainerHelper } from 'application/ioc/helpers/container.helper';
 import { ContainerItems } from 'application/ioc/static/container-items';
 import { IOrderService } from 'application/services/order.service';
-import { Roles } from 'domain/enums/roles.enum';
 import { GetQueryResultsArgs } from 'core/inputs/get-query-results.args';
-import { swaggerSchemas } from 'application/helpers/swagger-schemas.helper';
-import { UserDto } from 'domain/dto/user.dto';
 import { CreateOrderArgs } from 'core/inputs/create-order.args';
+import { Roles } from 'domain/enums/roles.enum';
+import { UserDto } from 'domain/dto/user.dto';
 
 @JsonController(createVersionedRoute({ controllerPath: '/orders', version: 'v1' }))
 export class OrdersController {

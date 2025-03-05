@@ -2,8 +2,9 @@ import crypto from 'crypto';
 import { plainToInstance } from 'class-transformer';
 import { ObjectLiteral } from 'typeorm';
 
-import { LoggerTracerInfrastructure } from 'infrastructure/logger-tracer.infrastructure';
 import { ContainerHelper } from 'application/ioc/helpers/container.helper';
+import config from 'core/configs/app.config';
+import passwordConfig from 'core/configs/password.config';
 import { RedisCacheKeys } from 'core/types/decorator.types';
 import { ServiceInitializationOptions } from 'domain/interfaces/service-initialization-options.interface';
 import { EnsureInitializedOptions } from 'domain/interfaces/ensure-initialized-options.interface';
@@ -14,8 +15,7 @@ import { CompareValuesOptions } from 'domain/interfaces/compare-values-options.i
 import { QueryResultsOptions } from 'domain/interfaces/query-results-options.interface';
 import { CreateVersionedRouteOptions } from 'domain/interfaces/create-versioned-route-options.interface';
 import { GeneratePasswordOptions } from 'domain/interfaces/generate-password-options.interface';
-import config from 'core/configs/app.config';
-import passwordConfig from 'core/configs/password.config';
+import { LoggerTracerInfrastructure } from 'infrastructure/logger-tracer.infrastructure';
 
 export const safelyInitializeService = async ({ serviceName, initializeFn }: ServiceInitializationOptions): Promise<void> => {
   try {
