@@ -21,6 +21,8 @@ services:
   #     - rabbitmq
   #   restart: always
   #   command: sh -c "yarn mup && yarn test && yarn start"
+  #   networks:
+  #     - common
 
   redis:
     container_name: redis_container
@@ -30,7 +32,9 @@ services:
     command: ["redis-server", "--requirepass", "your_redis_password"]
     restart: always
     volumes:
-      - ./root/redis:/data
+      - redis_data:/data
+    networks:
+      - common
 
   rabbitmq:
     container_name: rabbitmq_container
@@ -43,7 +47,9 @@ services:
       RABBITMQ_DEFAULT_PASS: your_rabbitmq_password
     restart: always
     volumes:
-      - ./root/rabbitmq:/var/lib/rabbitmq
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - common
 
   postgres:
     container_name: postgres_container
@@ -52,7 +58,17 @@ services:
     env_file:
       - ./.env
     volumes:
-      - ./root/postgres/data:/var/lib/postgresql/data
-      - ./root/postgres/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
+      - postgres_data:/var/lib/postgresql/data
     ports:
       - "54320:5432"
+    networks:
+      - common
+
+networks:
+  common:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:
+  rabbitmq_data:
