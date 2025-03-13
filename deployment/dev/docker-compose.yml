@@ -1,28 +1,28 @@
 version: '3.8'
 
 services:
-  api:
-    container_name: invoices_hub
-    image: invoice_hub
-    build:
-      context: ../../
-      dockerfile: Dockerfile
-      args:
-        ENV_PATH: ./deployment/dev/.env
-    ports:
-      - "3000:3000"
-    env_file:
-      - ./.env
-    volumes:
-      - ../../src:/app/src:delegated
-    depends_on:
-      - postgres
-      - redis
-      - rabbitmq
-    restart: always
-    command: sh -c "yarn mup && yarn test && yarn start"
-    networks:
-      - common
+  # api:
+  #   container_name: invoices_hub
+  #   image: invoice_hub
+  #   build:
+  #     context: ../../
+  #     dockerfile: Dockerfile
+  #     args:
+  #       ENV_PATH: ./deployment/dev/.env
+  #   ports:
+  #     - "3000:3000"
+  #   env_file:
+  #     - ./.env
+  #   volumes:
+  #     - ../../src:/app/src:delegated
+  #   depends_on:
+  #     - postgres
+  #     - redis
+  #     - rabbitmq
+  #   restart: always
+  #   command: sh -c "yarn mup && yarn test && yarn start"
+  #   networks:
+  #     - common
 
   redis:
     container_name: redis_container

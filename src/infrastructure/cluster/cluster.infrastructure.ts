@@ -1,8 +1,6 @@
-import { Container } from 'typedi';
 import cluster from 'cluster';
 
-import { GracefulShutdownHelper } from 'application/helpers/graceful-shutdown.helper';
-import { getErrorMessage, handleProcessSignals } from 'application/helpers/utility-functions.helper';
+import { getErrorMessage } from 'application/helpers/utility-functions.helper';
 import config from 'core/configs/app.config';
 import { LoggerTracerInfrastructure } from 'infrastructure/logging/logger-tracer.infrastructure';
 
@@ -29,9 +27,6 @@ export class ClusterInfrastructure {
   private setupPrimaryProcess (): void {
     const numCPUs = config.CLUSTER_WORKERS;
     this.forkWorkers(numCPUs);
-
-    const gracefulShutdownHelper = Container.get(GracefulShutdownHelper);
-    handleProcessSignals({ shutdownCallback: gracefulShutdownHelper.shutdownWorkers, callbackArgs: [] });
   }
 
   private forkWorkers (numCPUs: number): void {

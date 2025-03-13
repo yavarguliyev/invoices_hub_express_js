@@ -1,13 +1,11 @@
 import 'reflect-metadata';
-import cluster from 'cluster';
 import { Container } from 'typedi';
+import cluster from 'cluster';
 import http from 'http';
 
 import { GracefulShutdownHelper } from 'application/helpers/graceful-shutdown.helper';
 import { getErrorMessage, handleProcessSignals } from 'application/helpers/utility-functions.helper';
-import {
-  configureLifecycleServices, configureControllersAndServices, configureContainers, configureInfrastructures, configureMiddlewares
-} from 'application/ioc/bindings';
+import { configureLifecycleServices, configureControllersAndServices, configureContainers, configureInfrastructures } from 'application/ioc/bindings';
 import config from 'core/configs/app.config';
 import { initializeSubscribers } from 'domain/event-handlers';
 import { ClusterInfrastructure } from 'infrastructure/cluster/cluster.infrastructure';
@@ -17,14 +15,13 @@ import { ExpressServerInfrastructure } from 'infrastructure/server/express-serve
 const initializeDependencyInjections = async (): Promise<void> => {
   configureContainers();
   await configureInfrastructures();
-  configureMiddlewares();
   configureLifecycleServices();
   configureControllersAndServices();
   await initializeSubscribers();
 };
 
 const initializeServer = async (): Promise<http.Server> => {
-  const appServer = new ExpressServerInfrastructure();
+  const appServer = Container.get(ExpressServerInfrastructure);
   const app = await appServer.get();
   const server = http.createServer(app);
 

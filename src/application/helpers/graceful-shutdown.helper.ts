@@ -19,11 +19,13 @@ export class GracefulShutdownHelper {
   private rabbitMQ: RabbitMQInfrastructure;
   private redis: RedisInfrastructure;
   private db: DbConnectionInfrastructure;
+  private workers: WorkerThreadsInfrastructure;
 
   constructor () {
     this.rabbitMQ = Container.get(RabbitMQInfrastructure);
     this.redis = Container.get(RedisInfrastructure);
     this.db = Container.get(DbConnectionInfrastructure);
+    this.workers = Container.get(WorkerThreadsInfrastructure);
   }
 
   async shutDown (httpServer: http.Server): Promise<void> {
@@ -39,9 +41,7 @@ export class GracefulShutdownHelper {
       if (cluster.isPrimary) {
         await this.shutdownWorkers();
       } else {
-        const workers = Container.get(WorkerThreadsInfrastructure);
-
-        workers.shutdownWorkers();
+        this.workers.shutdownWorkers();
       }
 
       shutdownTimer = this.startShutdownTimer();

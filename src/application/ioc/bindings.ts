@@ -35,6 +35,7 @@ import { DataLoaderInfrastructure } from 'infrastructure/database/data-loader.in
 import { ContainerKeys } from 'application/ioc/static/container-keys';
 import { ClusterInfrastructure } from 'infrastructure/cluster/cluster.infrastructure';
 import { WorkerThreadsInfrastructure } from 'infrastructure/workers/worker-threads.infrastructure';
+import { ExpressServerInfrastructure } from 'infrastructure/server/express-server.infrastructure';
 
 export function configureContainers () {
   typeormUseContainer(Container);
@@ -66,15 +67,13 @@ export async function configureInfrastructures () {
   Container.set(ContainerKeys.USER_DATA_LOADER, userDataLoader);
 };
 
-export function configureMiddlewares () {
+export function configureLifecycleServices () {
   Container.set(HelmetMiddleware, new HelmetMiddleware());
   Container.set(GlobalErrorHandlerMiddleware, new GlobalErrorHandlerMiddleware());
-};
-
-export function configureLifecycleServices () {
-  Container.set(GracefulShutdownHelper, new GracefulShutdownHelper());
   Container.set(ClusterInfrastructure, new ClusterInfrastructure());
   Container.set(WorkerThreadsInfrastructure, new WorkerThreadsInfrastructure());
+  Container.set(GracefulShutdownHelper, new GracefulShutdownHelper());
+  Container.set(ExpressServerInfrastructure, new ExpressServerInfrastructure());
 }
 
 export function configureControllersAndServices () {

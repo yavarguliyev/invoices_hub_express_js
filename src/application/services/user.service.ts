@@ -5,7 +5,6 @@ import DataLoader from 'dataloader';
 
 import { ContainerKeys } from 'application/ioc/static/container-keys';
 import { generateStrongPassword, queryResults } from 'application/helpers/utility-functions.helper';
-import { REDIS_CACHE_KEYS } from 'core/types/redis-cache-keys.type';
 import { RedisDecorator } from 'core/decorators/redis.decorator';
 import { EventPublisherDecorator } from 'core/decorators/event-publisher.decorator';
 import { GetUserArgs } from 'core/inputs/get-user.args';
@@ -18,7 +17,7 @@ import { GetQueryResultsArgs } from 'core/inputs/get-query-results.args';
 import { UpdateUserPasswordArgs } from 'core/inputs/update-user-password.args';
 import config from 'core/configs/app.config';
 import { redisCacheConfig } from 'core/configs/redis.config';
-import { EVENTS } from 'domain/enums/events.enum';
+import { eventPublisherConfig } from 'core/configs/events.config';
 import { UserRepository } from 'domain/repositories/user.repository';
 import { RoleRepository } from 'domain/repositories/role.repository';
 import { ResultMessage } from 'domain/enums/result-message.enum';
@@ -87,7 +86,7 @@ export class UserService implements IUserService {
     return { payload: userDto, result: ResultMessage.SUCCEED };
   }
 
-  @EventPublisherDecorator({ keyTemplate: REDIS_CACHE_KEYS.USER_GET_LIST, event: EVENTS.USER_CREATED })
+  @EventPublisherDecorator(eventPublisherConfig.USER_CREATED)
   async create (userData: CreateUserArgs) {
     const { email, roleId } = userData;
 
@@ -110,7 +109,7 @@ export class UserService implements IUserService {
     return { result: ResultMessage.SUCCEED };
   }
 
-  @EventPublisherDecorator({ keyTemplate: REDIS_CACHE_KEYS.USER_GET_LIST, event: EVENTS.USER_UPDATED })
+  @EventPublisherDecorator(eventPublisherConfig.USER_UPDATED)
   async update (id: number, userData: UpdateUserArgs) {
     const userToBeUpdated = await this.userRepository.findOneBy({ id });
     if (!userToBeUpdated) {
@@ -134,7 +133,7 @@ export class UserService implements IUserService {
     return { payload: userDto, result: ResultMessage.SUCCEED };
   }
 
-  @EventPublisherDecorator({ keyTemplate: REDIS_CACHE_KEYS.USER_GET_LIST, event: EVENTS.USER_PASSWORD_UPDATED })
+  @EventPublisherDecorator(eventPublisherConfig.USER_PASSWORD_UPDATED)
   async updatePassword (id: number, updatePasswordArgs: UpdateUserPasswordArgs) {
     const { currentPassword, password, confirmPassword } = updatePasswordArgs;
 
@@ -160,7 +159,7 @@ export class UserService implements IUserService {
     return { result: ResultMessage.SUCCEED };
   }
 
-  @EventPublisherDecorator({ keyTemplate: REDIS_CACHE_KEYS.USER_GET_LIST, event: EVENTS.USER_DELETED })
+  @EventPublisherDecorator(eventPublisherConfig.USER_DELETED)
   async delete ({ id }: DeleteUserArgs) {
     const existingUser = await this.userRepository.findOne({ where: { id } });
     if (!existingUser) {

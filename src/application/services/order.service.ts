@@ -2,7 +2,6 @@ import { Container } from 'typedi';
 
 import { getErrorMessage, queryResults } from 'application/helpers/utility-functions.helper';
 import { RedisDecorator } from 'core/decorators/redis.decorator';
-import { REDIS_CACHE_KEYS } from 'core/types/redis-cache-keys.type';
 import { ResponseResults } from 'core/types/response-results.type';
 import { GetQueryResultsArgs } from 'core/inputs/get-query-results.args';
 import { CreateOrderArgs } from 'core/inputs/create-order.args';
@@ -10,6 +9,7 @@ import { OrderApproveOrCancelArgs } from 'core/inputs/order-approve-or-cancel.ar
 import { BadRequestError, DatabaseConnectionError } from 'core/errors';
 import { EventPublisherDecorator } from 'core/decorators/event-publisher.decorator';
 import { redisCacheConfig } from 'core/configs/redis.config';
+import { eventPublisherConfig } from 'core/configs/events.config';
 import { OrderRepository } from 'domain/repositories/order.repository';
 import { ResultMessage } from 'domain/enums/result-message.enum';
 import { OrderDto } from 'domain/dto/order.dto';
@@ -17,7 +17,6 @@ import { UserDto } from 'domain/dto/user.dto';
 import { UserRepository } from 'domain/repositories/user.repository';
 import { OrderStatus } from 'domain/enums/order-status.enum';
 import { InvoiceStatus } from 'domain/enums/invoice-status.enum';
-import { EVENTS } from 'domain/enums/events.enum';
 import User from 'domain/entities/user.entity';
 import Order from 'domain/entities/order.entity';
 import Invoice from 'domain/entities/invoice.entity';
@@ -57,7 +56,7 @@ export class OrderService implements IOrderService {
     return { payloads, total, result: ResultMessage.SUCCEED };
   }
 
-  @EventPublisherDecorator({ keyTemplate: REDIS_CACHE_KEYS.ORDER_INVOICE_GET_LIST, event: EVENTS.ORDER_CREATED })
+  @EventPublisherDecorator(eventPublisherConfig.ORDER_CREATED)
   async createOrder ({ id }: UserDto, args: CreateOrderArgs) {
     const currentUser = await this.userRepository.findOneByOrFail({ id });
     const order = this.orderRepository.create({ ...args, user: currentUser, status: OrderStatus.PENDING });
@@ -71,7 +70,7 @@ export class OrderService implements IOrderService {
     return { result: ResultMessage.SUCCEED };
   }
 
-  @EventPublisherDecorator({ keyTemplate: REDIS_CACHE_KEYS.ORDER_INVOICE_GET_LIST, event: EVENTS.ORDER_APPROVED })
+  @EventPublisherDecorator(eventPublisherConfig.ORDER_APPROVED)
   async approveOrder ({ id }: UserDto, orderId: number) {
     return this.processOrderApproveOrCancel({
       userId: id,
@@ -82,7 +81,7 @@ export class OrderService implements IOrderService {
     });
   }
 
-  @EventPublisherDecorator({ keyTemplate: REDIS_CACHE_KEYS.ORDER_INVOICE_GET_LIST, event: EVENTS.ORDER_CANCELED })
+  @EventPublisherDecorator(eventPublisherConfig.ORDER_CANCELED)
   async cancelOrder ({ id }: UserDto, orderId: number) {
     return this.processOrderApproveOrCancel({
       userId: id,
