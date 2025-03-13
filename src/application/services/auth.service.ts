@@ -9,7 +9,7 @@ import { GenerateLoginResponse } from 'core/types/generate-login-response.type';
 import passportConfig from 'core/configs/passport.config';
 import { UserRepository } from 'domain/repositories/user.repository';
 import { ResultMessage } from 'domain/enums/result-message.enum';
-import { LoggerTracerInfrastructure } from 'infrastructure/logger-tracer.infrastructure';
+import { LoggerTracerInfrastructure } from 'infrastructure/logging/logger-tracer.infrastructure';
 
 export interface IAuthService {
   signin (args: SigninArgs): Promise<LoginResponse>;
@@ -17,10 +17,14 @@ export interface IAuthService {
 }
 
 export class AuthService implements IAuthService {
-  private userRepository: UserRepository;
+  private _userRepository?: UserRepository;
 
-  constructor () {
-    this.userRepository = Container.get(UserRepository);
+  private get userRepository (): UserRepository {
+    if (!this._userRepository) {
+      this._userRepository = Container.get(UserRepository);
+    }
+
+    return this._userRepository;
   }
 
   async signin (args: SigninArgs) {

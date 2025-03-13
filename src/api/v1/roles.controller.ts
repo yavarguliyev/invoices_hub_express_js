@@ -12,10 +12,14 @@ import { Roles } from 'domain/enums/roles.enum';
 @Authorized([Roles.GlobalAdmin, Roles.Admin])
 @JsonController(createVersionedRoute({ controllerPath: '/roles', version: 'v1' }))
 export class RolesController {
-  private roleService: IRoleService;
+  private _roleService: IRoleService;
 
-  constructor () {
-    this.roleService = ContainerHelper.get<IRoleService>(ContainerItems.IRoleService);
+  private get roleService (): IRoleService {
+    if (!this._roleService) {
+      this._roleService = ContainerHelper.get<IRoleService>(ContainerItems.IRoleService);
+    }
+
+    return this._roleService;
   }
 
   @Get('/')

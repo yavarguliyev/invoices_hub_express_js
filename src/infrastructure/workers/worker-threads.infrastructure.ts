@@ -3,15 +3,15 @@ import path from 'path';
 
 import { WorkerThreadsTask } from 'core/types/worker-threads-task.type';
 import appConfig from 'core/configs/app.config';
-import { LoggerTracerInfrastructure } from 'infrastructure/logger-tracer.infrastructure';
+import { LoggerTracerInfrastructure } from 'infrastructure/logging/logger-tracer.infrastructure';
 
 export class WorkerThreadsInfrastructure {
-  private static workerPool: Worker[] = [];
-  private static taskQueue: { task: WorkerThreadsTask; resolve: (value: unknown) => void; reject: (reason?: any) => void }[] = [];
-  private static numThreads = appConfig.MAX_WORKERS;
-  private static workerFile = path.resolve(__dirname, appConfig.WORKER_FILE_DIRECTION);
+  private workerPool: Worker[] = [];
+  private taskQueue: { task: WorkerThreadsTask; resolve: (value: unknown) => void; reject: (reason?: any) => void }[] = [];
+  private numThreads = appConfig.MAX_WORKERS;
+  private workerFile = path.resolve(__dirname, appConfig.WORKER_FILE_DIRECTION);
 
-  private static createWorker (): Worker {
+  private createWorker (): Worker {
     const worker = new Worker(this.workerFile);
 
     worker.on('message', (message: { success: boolean; result?: unknown; error?: string }) => {
@@ -25,17 +25,19 @@ export class WorkerThreadsInfrastructure {
 
     worker.on('error', (error: Error) => {
       LoggerTracerInfrastructure.log(`Worker thread error: ${error}`, 'error');
+
       const task = this.taskQueue.shift();
       if (task) {
         task.reject(error);
       }
+
       worker.terminate();
     });
 
     return worker;
   }
 
-  private static processQueue () {
+  private processQueue (): void {
     if (this.taskQueue.length > 0 && this.workerPool.length > 0) {
       const worker = this.workerPool.pop();
 
@@ -46,7 +48,7 @@ export class WorkerThreadsInfrastructure {
     }
   }
 
-  static async executeHeavyTask (task: WorkerThreadsTask) {
+  async executeHeavyTask (task: WorkerThreadsTask): Promise<unknown> {
     return new Promise((resolve, reject) => {
       this.taskQueue.push({ task, resolve, reject });
 
@@ -58,8 +60,9 @@ export class WorkerThreadsInfrastructure {
     });
   }
 
-  static shutdownWorkers () {
-    LoggerTracerInfrastructure.log('Shutting down all worker threads...', 'info');
+  shutdownWorkers (): void {
+    LoggerTracerInfrastructure.log('Shutting down all worker threads...');
+
     this.workerPool.forEach(worker => worker.terminate());
     this.workerPool = [];
     this.taskQueue = [];

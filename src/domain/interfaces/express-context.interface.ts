@@ -8,11 +8,11 @@ export interface JwtPayload {
   role: string;
   iat?: number;
   exp?: number;
-};
+}
 
 export interface AuthenticationInfo {
   info?: object | string | Array<string | undefined>
-};
+}
 
 export interface ExpressContext {
   redisData?: { eventChannel: string, responseChannel: string };
@@ -21,10 +21,10 @@ export interface ExpressContext {
   tokenData: JwtPayload;
   currentUser?: UserDto;
   token: string;
-};
+}
 
 export interface WithExpressContext extends ExpressContext {
   userRole?: string;
   roles?: string[];
   allowedRoles?: string[];
-};
+}

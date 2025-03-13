@@ -4,9 +4,9 @@ import { DataSource } from 'typeorm';
 import { getDataSourceConfig } from 'core/configs/datasource.config';
 
 export class DbConnectionInfrastructure {
-  private static dataSource?: DataSource;
+  private dataSource?: DataSource;
 
-  static create (): DataSource {
+  create (): DataSource {
     if (!this.dataSource) {
       this.dataSource = new DataSource(getDataSourceConfig());
     }
@@ -14,18 +14,18 @@ export class DbConnectionInfrastructure {
     return this.dataSource;
   }
 
-  static async disconnect (): Promise<void> {
-    if (this?.dataSource?.isInitialized) {
+  async disconnect (): Promise<void> {
+    if (this.dataSource?.isInitialized) {
       await this.dataSource.destroy();
-      delete this.dataSource;
+      this.dataSource = undefined;
     }
   }
 
-  static isConnected (): boolean {
+  isConnected (): boolean {
     return !!this.dataSource?.isInitialized;
   }
 
-  static getDataSource (): DataSource | undefined {
+  getDataSource (): DataSource | undefined {
     return this.dataSource;
   }
 }

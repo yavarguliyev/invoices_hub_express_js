@@ -9,10 +9,14 @@ import { IHealthcheckService } from 'application/services/healthcheck.service';
 
 @JsonController(createVersionedRoute({ controllerPath: '/healthcheck', version: 'v1' }))
 export class HealthcheckController {
-  private healthCheckService: IHealthcheckService;
+  private _healthCheckService: IHealthcheckService;
 
-  constructor () {
-    this.healthCheckService = ContainerHelper.get<IHealthcheckService>(ContainerItems.IHealthcheckService);
+  private get healthCheckService (): IHealthcheckService {
+    if (!this._healthCheckService) {
+      this._healthCheckService = ContainerHelper.get<IHealthcheckService>(ContainerItems.IHealthcheckService);
+    }
+
+    return this._healthCheckService;
   }
 
   @Get('/')

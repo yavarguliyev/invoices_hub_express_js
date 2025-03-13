@@ -1,7 +1,8 @@
 import { parentPort } from 'worker_threads';
 
+import { getErrorMessage } from 'application/helpers/utility-functions.helper';
 import { Payload } from 'core/types/worker-threads-operations.type';
-import { Task } from 'domain/interfaces/worker-threads-operations.interface';
+import { Task } from 'domain/interfaces/utility-functions-options.interface';
 import { WorkerThreadsOperations } from 'domain/enums/worker-threads-operations.enum';
 
 class GenericTask<P extends object, R extends Payload> implements Task<P, R> {
@@ -19,14 +20,14 @@ class GenericTask<P extends object, R extends Payload> implements Task<P, R> {
 }
 
 class WorkerTaskHandler {
-  private static taskExecutors: { [key in WorkerThreadsOperations]?: Task<object, Payload>; } = {};
+  private taskExecutors: { [key in WorkerThreadsOperations]?: Task<object, Payload> } = {};
 
-  static registerTask<T extends WorkerThreadsOperations, P extends object> (taskName: T, processor: (payload: P) => Payload) {
-    WorkerTaskHandler.taskExecutors[taskName] = new GenericTask<P, Payload>(taskName, processor);
+  registerTask<T extends WorkerThreadsOperations, P extends object> (taskName: T, processor: (payload: P) => Payload): void {
+    this.taskExecutors[taskName] = new GenericTask<P, Payload>(taskName, processor);
   }
 
-  static executeTask<T extends WorkerThreadsOperations> (taskName: T, param: object) {
-    const task = WorkerTaskHandler.taskExecutors[taskName];
+  executeTask<T extends WorkerThreadsOperations> (taskName: T, param: object): Payload {
+    const task = this.taskExecutors[taskName];
     if (!task) {
       throw new Error(`Unknown task: ${taskName}`);
     }
@@ -35,7 +36,9 @@ class WorkerTaskHandler {
   }
 }
 
-WorkerTaskHandler.registerTask(WorkerThreadsOperations.HEAVY_COMPUTATION, (payload: { iterations: number }) => {
+const workerTaskHandler = new WorkerTaskHandler();
+
+workerTaskHandler.registerTask(WorkerThreadsOperations.HEAVY_COMPUTATION, (payload: { iterations: number }) => {
   let result = 0;
 
   if (typeof payload.iterations !== 'number') {
@@ -49,7 +52,7 @@ WorkerTaskHandler.registerTask(WorkerThreadsOperations.HEAVY_COMPUTATION, (paylo
   return { message: WorkerThreadsOperations.HEAVY_COMPUTATION, data: { iterations: result } };
 });
 
-WorkerTaskHandler.registerTask(WorkerThreadsOperations.DATA_TRANSFORMATION, (payload: object) => {
+workerTaskHandler.registerTask(WorkerThreadsOperations.DATA_TRANSFORMATION, (payload: object) => {
   return { message: WorkerThreadsOperations.DATA_TRANSFORMATION, data: payload };
 });
 
@@ -61,10 +64,9 @@ parentPort?.on('message', async (message: { name: string; params: object }) => {
   }
 
   try {
-    const result = WorkerTaskHandler.executeTask(name as WorkerThreadsOperations, params);
+    const result = workerTaskHandler.executeTask(name as WorkerThreadsOperations, params);
     parentPort?.postMessage({ success: true, result });
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    parentPort?.postMessage({ success: false, error: errorMessage });
+    parentPort?.postMessage({ success: false, error: getErrorMessage(error) });
   }
 });

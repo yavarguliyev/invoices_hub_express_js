@@ -8,6 +8,7 @@ import { InvoicesController } from 'api/v1/invoices.controller';
 import { OrdersController } from 'api/v1/orders.controller';
 import { RolesController } from 'api/v1/roles.controller';
 import { UsersController } from 'api/v1/users.controller';
+import { GracefulShutdownHelper } from 'application/helpers/graceful-shutdown.helper';
 import { AuthService } from 'application/services/auth.service';
 import { HealthcheckService } from 'application/services/healthcheck.service';
 import { InvoiceService } from 'application/services/invoice.service';
@@ -27,37 +28,54 @@ import { InvoiceRepository } from 'domain/repositories/invoice.repository';
 import { OrderRepository } from 'domain/repositories/order.repository';
 import { RoleRepository } from 'domain/repositories/role.repository';
 import { UserRepository } from 'domain/repositories/user.repository';
-import { ExpressServerInfrastructure } from 'infrastructure/express-server.infrastructure';
-import { DbConnectionInfrastructure } from 'infrastructure/db-connection.infrastructure';
+import { DbConnectionInfrastructure } from 'infrastructure/database/db-connection.infrastructure';
+import { RabbitMQInfrastructure } from 'infrastructure/rabbitmq/rabbitmq.infrastructure';
+import { RedisInfrastructure } from 'infrastructure/redis/redis.infrastructure';
+import { DataLoaderInfrastructure } from 'infrastructure/database/data-loader.infrastructure';
+import { ContainerKeys } from 'application/ioc/static/container-keys';
+import { ClusterInfrastructure } from 'infrastructure/cluster/cluster.infrastructure';
+import { WorkerThreadsInfrastructure } from 'infrastructure/workers/worker-threads.infrastructure';
 
 export function configureContainers () {
   typeormUseContainer(Container);
   routingControllersUseContainer(Container);
 };
 
-export async function configureRepositories () {
-  const dataSource = await DbConnectionInfrastructure.create();
+export async function configureInfrastructures () {
+  const rabbitMQ = new RabbitMQInfrastructure();
+  await rabbitMQ.initialize();
+
+  const redis = new RedisInfrastructure();
+  await redis.initialize();
+
+  const dbConnection = new DbConnectionInfrastructure();
+  const dataSource = await dbConnection.create();
   await dataSource.initialize();
 
-  const invoiceRepository = dataSource.getRepository(Invoice);
-  const orderRepository = dataSource.getRepository(Order);
-  const roleRepository = dataSource.getRepository(Role);
-  const userRepository = dataSource.getRepository(User);
+  const invoiceDataLoader = new DataLoaderInfrastructure<Invoice>(dataSource.getRepository(Invoice));
+  const orderDataLoader = new DataLoaderInfrastructure<Order>(dataSource.getRepository(Order));
+  const roleDataLoader = new DataLoaderInfrastructure<Role>(dataSource.getRepository(Role));
+  const userDataLoader = new DataLoaderInfrastructure<User>(dataSource.getRepository(User));
 
-  Container.set(InvoiceRepository, invoiceRepository);
-  Container.set(OrderRepository, orderRepository);
-  Container.set(RoleRepository, roleRepository);
-  Container.set(UserRepository, userRepository);
-};
-
-export function configureInfrastructures () {
-  Container.set(ExpressServerInfrastructure, new ExpressServerInfrastructure());
+  Container.set(RabbitMQInfrastructure, rabbitMQ);
+  Container.set(RedisInfrastructure, redis);
+  Container.set(DbConnectionInfrastructure, dbConnection);
+  Container.set(ContainerKeys.INVOICE_DATA_LOADER, invoiceDataLoader);
+  Container.set(ContainerKeys.ORDER_DATA_LOADER, orderDataLoader);
+  Container.set(ContainerKeys.ROLE_DATA_LOADER, roleDataLoader);
+  Container.set(ContainerKeys.USER_DATA_LOADER, userDataLoader);
 };
 
 export function configureMiddlewares () {
   Container.set(HelmetMiddleware, new HelmetMiddleware());
   Container.set(GlobalErrorHandlerMiddleware, new GlobalErrorHandlerMiddleware());
 };
+
+export function configureLifecycleServices () {
+  Container.set(GracefulShutdownHelper, new GracefulShutdownHelper());
+  Container.set(ClusterInfrastructure, new ClusterInfrastructure());
+  Container.set(WorkerThreadsInfrastructure, new WorkerThreadsInfrastructure());
+}
 
 export function configureControllersAndServices () {
   registerService({ id: ContainerItems.IAuthService, service: AuthService });
@@ -66,6 +84,18 @@ export function configureControllersAndServices () {
   registerService({ id: ContainerItems.IOrderService, service: OrderService });
   registerService({ id: ContainerItems.IRoleService, service: RoleService });
   registerService({ id: ContainerItems.IUserService, service: UserService });
+
+  const dbConnection = Container.get<DbConnectionInfrastructure>(DbConnectionInfrastructure);
+  const dataSource = dbConnection.getDataSource();
+
+  if (!dataSource) {
+    throw new Error('Database connection is not initialized.');
+  }
+
+  Container.set(InvoiceRepository, dataSource.getRepository(Invoice));
+  Container.set(OrderRepository, dataSource.getRepository(Order));
+  Container.set(RoleRepository, dataSource.getRepository(Role));
+  Container.set(UserRepository, dataSource.getRepository(User));
 
   ContainerHelper
     .registerController(AuthController)

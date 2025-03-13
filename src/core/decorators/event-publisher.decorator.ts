@@ -1,6 +1,8 @@
-import { EventDecoratorOption } from 'core/types/decorator.types';
-import RedisInfrastructure from 'infrastructure/redis.infrastructure';
-import RabbitMQInfrastructure from 'infrastructure/rabbitmq.infrastructure';
+import { Container } from 'typedi';
+
+import { EventDecoratorOption } from 'core/types/event-publisher-keys.type';
+import { RabbitMQInfrastructure } from 'infrastructure/rabbitmq/rabbitmq.infrastructure';
+import { RedisInfrastructure } from 'infrastructure/redis/redis.infrastructure';
 
 export function EventPublisherDecorator<T extends (...args: unknown[]) => Promise<unknown>>(options: EventDecoratorOption) {
   return function (_target: object, _propertyKey: string, descriptor: PropertyDescriptor) {
@@ -12,12 +14,14 @@ export function EventPublisherDecorator<T extends (...args: unknown[]) => Promis
       const result = await originalMethod.apply(this, args);
 
       if (event) {
-        await RabbitMQInfrastructure.publish(event, JSON.stringify(result));
+        const rabbitMQ = Container.get(RabbitMQInfrastructure);
+        await rabbitMQ.publish(event, JSON.stringify(result));
       }
 
-      const redisCacheKeys = await RedisInfrastructure.getHashKeys(keyTemplate);
+      const redis = Container.get(RedisInfrastructure);
+      const redisCacheKeys = await redis.getHashKeys(keyTemplate);
       if (redisCacheKeys.length) {
-        await RedisInfrastructure.deletekeys(redisCacheKeys);
+        await redis.deleteKeys(redisCacheKeys);
       }
 
       return result as ReturnType<T>;

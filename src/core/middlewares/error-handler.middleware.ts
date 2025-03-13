@@ -2,7 +2,7 @@ import { Middleware, ExpressErrorMiddlewareInterface } from 'routing-controllers
 import { Request, Response, NextFunction } from 'express';
 
 import { CustomError } from 'core/errors';
-import { ErrorWithValidation, ValidationError } from 'domain/interfaces/error-handler-middleware.interface';
+import { ErrorWithValidation, ValidationError } from 'domain/interfaces/error-request-details.interface';
 
 const handleErrorResponse = (error: Error, response: Response) => {
   if (error instanceof CustomError) {

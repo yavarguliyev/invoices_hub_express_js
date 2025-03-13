@@ -1,20 +1,32 @@
+import { Container } from 'typedi';
 import http from 'http';
 import cluster from 'cluster';
 
 import { RetryHelper } from 'application/helpers/retry.helper';
+import { getErrorMessage } from 'application/helpers/utility-functions.helper';
 import config from 'core/configs/app.config';
-import RedisInfrastructure from 'infrastructure/redis.infrastructure';
-import RabbitMQInfrastructure from 'infrastructure/rabbitmq.infrastructure';
-import { LoggerTracerInfrastructure } from 'infrastructure/logger-tracer.infrastructure';
-import { DbConnectionInfrastructure } from 'infrastructure/db-connection.infrastructure';
-import { WorkerThreadsInfrastructure } from 'infrastructure/worker-threads.infrastructure';
+import { RedisInfrastructure } from 'infrastructure/redis/redis.infrastructure';
+import { RabbitMQInfrastructure } from 'infrastructure/rabbitmq/rabbitmq.infrastructure';
+import { LoggerTracerInfrastructure } from 'infrastructure/logging/logger-tracer.infrastructure';
+import { DbConnectionInfrastructure } from 'infrastructure/database/db-connection.infrastructure';
+import { WorkerThreadsInfrastructure } from 'infrastructure/workers/worker-threads.infrastructure';
 
-export class ClusterShutdownHelper {
-  private static readonly shutdownTimeout = config.SHUT_DOWN_TIMER;
-  private static readonly maxRetries = config.SHUTDOWN_RETRIES;
-  private static readonly retryDelay = config.SHUTDOWN_RETRY_DELAY;
+export class GracefulShutdownHelper {
+  private readonly shutdownTimeout = config.SHUT_DOWN_TIMER;
+  private readonly maxRetries = config.SHUTDOWN_RETRIES;
+  private readonly retryDelay = config.SHUTDOWN_RETRY_DELAY;
 
-  static async shutDown (httpServer: http.Server): Promise<void> {
+  private rabbitMQ: RabbitMQInfrastructure;
+  private redis: RedisInfrastructure;
+  private db: DbConnectionInfrastructure;
+
+  constructor () {
+    this.rabbitMQ = Container.get(RabbitMQInfrastructure);
+    this.redis = Container.get(RedisInfrastructure);
+    this.db = Container.get(DbConnectionInfrastructure);
+  }
+
+  async shutDown (httpServer: http.Server): Promise<void> {
     let shutdownTimer;
 
     try {
@@ -27,14 +39,14 @@ export class ClusterShutdownHelper {
       if (cluster.isPrimary) {
         await this.shutdownWorkers();
       } else {
-        WorkerThreadsInfrastructure.shutdownWorkers();
+        const workers = Container.get(WorkerThreadsInfrastructure);
+
+        workers.shutdownWorkers();
       }
 
       shutdownTimer = this.startShutdownTimer();
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-
-      LoggerTracerInfrastructure.log(`Error during shutdown: ${errorMessage}`, 'error');
+    } catch (error) {
+      LoggerTracerInfrastructure.log(`Error during shutdown: ${getErrorMessage(error)}`, 'error');
     } finally {
       if (shutdownTimer) {
         clearTimeout(shutdownTimer);
@@ -44,7 +56,7 @@ export class ClusterShutdownHelper {
     }
   }
 
-  static async shutdownWorkers (): Promise<void> {
+  async shutdownWorkers (): Promise<void> {
     const workers = Object.values(cluster.workers || {});
 
     for (const worker of workers) {
@@ -56,9 +68,9 @@ export class ClusterShutdownHelper {
     }
   }
 
-  private static async disconnectServices (): Promise<void> {
+  private async disconnectServices (): Promise<void> {
     const disconnectPromises = [
-      RetryHelper.executeWithRetry(() => RedisInfrastructure.disconnect(), {
+      RetryHelper.executeWithRetry(() => this.rabbitMQ.disconnect(), {
         serviceName: 'Redis',
         maxRetries: this.maxRetries,
         retryDelay: this.retryDelay,
@@ -66,7 +78,7 @@ export class ClusterShutdownHelper {
           LoggerTracerInfrastructure.log(`Retrying Redis disconnect, attempt ${attempt}`);
         }
       }),
-      RetryHelper.executeWithRetry(() => RabbitMQInfrastructure.disconnect(), {
+      RetryHelper.executeWithRetry(() => this.redis.disconnect(), {
         serviceName: 'RabbitMQ',
         maxRetries: this.maxRetries,
         retryDelay: this.retryDelay,
@@ -74,7 +86,7 @@ export class ClusterShutdownHelper {
           LoggerTracerInfrastructure.log(`Retrying RabbitMQ disconnect, attempt ${attempt}`);
         }
       }),
-      RetryHelper.executeWithRetry(() => DbConnectionInfrastructure.disconnect(), {
+      RetryHelper.executeWithRetry(() => this.db.disconnect(), {
         serviceName: 'Database',
         maxRetries: this.maxRetries,
         retryDelay: this.retryDelay,
@@ -92,7 +104,7 @@ export class ClusterShutdownHelper {
     }
   }
 
-  static startShutdownTimer () {
+  startShutdownTimer () {
     return setTimeout(() => {
       LoggerTracerInfrastructure.log('Shutdown timeout reached, forcing process exit', 'error');
       process.exit(1);

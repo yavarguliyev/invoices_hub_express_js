@@ -19,7 +19,7 @@ import { HelmetMiddleware } from 'core/middlewares/helmet.middleware';
 import passportConfig from 'core/configs/passport.config';
 import swaggerConfig from 'core/configs/swagger.config';
 import { NotFoundError } from 'core/errors';
-import { AuthStrategiesInfrastructure } from 'infrastructure/auth-strategies.infrastructure';
+import { AuthStrategiesInfrastructure } from 'infrastructure/auth/auth-strategies.infrastructure';
 
 export interface IExpressServerInfrastructure {
   get(): Promise<Express>;

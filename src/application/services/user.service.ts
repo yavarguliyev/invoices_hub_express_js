@@ -3,8 +3,9 @@ import { plainToInstance } from 'class-transformer';
 import bcrypt from 'bcrypt';
 import DataLoader from 'dataloader';
 
+import { ContainerKeys } from 'application/ioc/static/container-keys';
 import { generateStrongPassword, queryResults } from 'application/helpers/utility-functions.helper';
-import { REDIS_CACHE_KEYS } from 'core/types/decorator.types';
+import { REDIS_CACHE_KEYS } from 'core/types/redis-cache-keys.type';
 import { RedisDecorator } from 'core/decorators/redis.decorator';
 import { EventPublisherDecorator } from 'core/decorators/event-publisher.decorator';
 import { GetUserArgs } from 'core/inputs/get-user.args';
@@ -16,6 +17,7 @@ import { ResponseResults } from 'core/types/response-results.type';
 import { GetQueryResultsArgs } from 'core/inputs/get-query-results.args';
 import { UpdateUserPasswordArgs } from 'core/inputs/update-user-password.args';
 import config from 'core/configs/app.config';
+import { redisCacheConfig } from 'core/configs/redis.config';
 import { EVENTS } from 'domain/enums/events.enum';
 import { UserRepository } from 'domain/repositories/user.repository';
 import { RoleRepository } from 'domain/repositories/role.repository';
@@ -23,7 +25,7 @@ import { ResultMessage } from 'domain/enums/result-message.enum';
 import { UserDto } from 'domain/dto/user.dto';
 import { RoleDto } from 'domain/dto/role.dto';
 import User from 'domain/entities/user.entity';
-import { DataLoaderInfrastructure } from 'infrastructure/data-loader.infrastructure';
+import { DataLoaderInfrastructure } from 'infrastructure/database/data-loader.infrastructure';
 
 export interface IUserService {
   get (query: GetQueryResultsArgs): Promise<ResponseResults<UserDto>>;
@@ -35,30 +37,36 @@ export interface IUserService {
 }
 
 export class UserService implements IUserService {
-  private userRepository: UserRepository;
-  private roleRepository: RoleRepository;
+  private _userRepository?: UserRepository;
+  private _roleRepository?: RoleRepository;
+  private _userDtoLoaderById?: DataLoader<number, UserDto>;
 
-  private userDtoLoaderById: DataLoader<number, UserDto>;
+  private get roleRepository (): RoleRepository {
+    if (!this._roleRepository) {
+      this._roleRepository = Container.get(RoleRepository);
+    }
 
-  constructor () {
-    this.userRepository = Container.get(UserRepository);
-    this.roleRepository = Container.get(RoleRepository);
-
-    this.userDtoLoaderById = DataLoaderInfrastructure.getDataLoader({
-      entity: User,
-      repository: this.userRepository,
-      Dto: UserDto,
-      fetchField: 'id',
-      relations: [
-        {
-          relation: 'role',
-          relationDto: RoleDto
-        }
-      ]
-    });
+    return this._roleRepository;
   }
 
-  @RedisDecorator<UserDto>({ keyTemplate: REDIS_CACHE_KEYS.USER_GET_LIST })
+  private get userRepository (): UserRepository {
+    if (!this._userRepository) {
+      this._userRepository = Container.get(UserRepository);
+    }
+
+    return this._userRepository;
+  }
+
+  private get userDtoLoaderById (): DataLoader<number, UserDto> {
+    if (!this._userDtoLoaderById) {
+      this._userDtoLoaderById = Container.get<DataLoaderInfrastructure<User>>(ContainerKeys.USER_DATA_LOADER)
+        .getDataLoader({ entity: User, Dto: UserDto, fetchField: 'id', relations: [{ relation: 'role', relationDto: RoleDto }] });
+    }
+
+    return this._userDtoLoaderById;
+  }
+
+  @RedisDecorator(redisCacheConfig.USER_LIST)
   async get (query: GetQueryResultsArgs) {
     const { payloads, total } = await queryResults({
       repository: this.userRepository,

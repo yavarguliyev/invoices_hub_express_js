@@ -1,28 +1,18 @@
-import { Repository, EntityTarget, In, FindOptionsWhere } from 'typeorm';
+import { Repository, In, FindOptionsWhere } from 'typeorm';
 import { plainToInstance } from 'class-transformer';
 import DataLoader from 'dataloader';
 import { NotFoundError } from 'routing-controllers';
 
-type IEntityWithId<T extends object = {}> = T & { id: number | string };
+import { IEntityWithId } from 'core/types/db-results.type';
+import { IRelationParams, IEntityDataLoaderParams } from 'domain/interfaces/data-loader-request-options.interface';
 
-interface IRelationParams<T> {
-  relation: keyof T & string;
-  relationDto: new () => T[keyof T];
-}
+export class DataLoaderInfrastructure<Entity extends IEntityWithId> {
+  private dataLoaders: Map<string, DataLoader<unknown, unknown>> = new Map();
 
-interface IEntityDataLoaderParams<Entity extends IEntityWithId, D> {
-  entity: EntityTarget<Entity>;
-  relations?: IRelationParams<D>[];
-  repository: Repository<Entity>;
-  Dto: new () => D;
-  fetchField?: keyof Entity;
-}
+  constructor (private readonly repository: Repository<Entity>) { }
 
-export class DataLoaderInfrastructure {
-  private static dataLoaders: Map<string, DataLoader<unknown, unknown>> = new Map();
-
-  static getDataLoader<Entity extends IEntityWithId, D extends object, FetchField extends keyof Entity = keyof Entity> (
-    params: IEntityDataLoaderParams<Entity, D>
+  getDataLoader<D extends object, FetchField extends keyof Entity = keyof Entity> (
+    params: Omit<IEntityDataLoaderParams<Entity, D>, 'repository'>
   ): DataLoader<Entity[FetchField], D> {
     const entityName = typeof params.entity === 'function' ? params.entity.name : params.entity;
     const relationsKey = JSON.stringify((params.relations || []).map(r => r.relation).sort());
@@ -34,7 +24,7 @@ export class DataLoaderInfrastructure {
     }
 
     const loader = new DataLoader<Entity[FetchField], D>(async (fetchValues) => {
-      const data = await params.repository.find({
+      const data = await this.repository.find({
         where: { [fetchField]: In(fetchValues) } as FindOptionsWhere<Entity>,
         relations: params.relations?.map((r) => r.relation)
       });
@@ -46,24 +36,27 @@ export class DataLoaderInfrastructure {
           throw new NotFoundError(`${entityName} with ${String(fetchField)} ${value} not found`);
         }
 
-        return plainToInstance(params.Dto, { ...item, ...this.processRelations<D>(item, params.relations) }, { excludeExtraneousValues: true });
+        return plainToInstance(
+          params.Dto,
+          { ...item, ...this.processRelations<D>(item, params.relations) },
+          { excludeExtraneousValues: true }
+        );
       });
     });
 
     this.dataLoaders.set(loaderKey, loader);
-
     return loader;
   }
 
-  private static processRelations<T extends object> (item: IEntityWithId, relations?: IRelationParams<T>[]): Partial<T> {
+  private processRelations<T extends object> (item: Entity, relations?: IRelationParams<T>[]): Partial<T> {
     if (!relations) return {} as Partial<T>;
 
     return relations.reduce<Partial<T>>((acc, { relation, relationDto }) => {
       if (relation in item) {
-        let relationValue = (item as T)[relation];
+        let relationValue = item[relation as keyof Entity];
 
         if (relationValue instanceof Promise) {
-          relationValue = (item as T)[`__${relation}__` as keyof T & string] ?? relationValue;
+          relationValue = item[`__${relation}__` as keyof Entity] ?? relationValue;
         }
 
         const resolvedValue = relationValue instanceof Promise

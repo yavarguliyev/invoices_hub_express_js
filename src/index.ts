@@ -3,33 +3,29 @@ import cluster from 'cluster';
 import { Container } from 'typedi';
 import http from 'http';
 
-import { ClusterShutdownHelper } from 'application/helpers/cluster-shutdown.helper';
-import { handleProcessSignals } from 'application/helpers/utility-functions.helper';
-import { configureRepositories, configureControllersAndServices, configureContainers, configureInfrastructures, configureMiddlewares } from 'application/ioc/bindings';
+import { GracefulShutdownHelper } from 'application/helpers/graceful-shutdown.helper';
+import { getErrorMessage, handleProcessSignals } from 'application/helpers/utility-functions.helper';
+import {
+  configureLifecycleServices, configureControllersAndServices, configureContainers, configureInfrastructures, configureMiddlewares
+} from 'application/ioc/bindings';
 import config from 'core/configs/app.config';
 import { initializeSubscribers } from 'domain/event-handlers';
-import RedisInfrastructure from 'infrastructure/redis.infrastructure';
-import RabbitMQInfrastructure from 'infrastructure/rabbitmq.infrastructure';
-import { ClusterInfrastructure } from 'infrastructure/cluster.infrastructure';
-import { LoggerTracerInfrastructure } from 'infrastructure/logger-tracer.infrastructure';
-import { ExpressServerInfrastructure } from 'infrastructure/express-server.infrastructure';
+import { ClusterInfrastructure } from 'infrastructure/cluster/cluster.infrastructure';
+import { LoggerTracerInfrastructure } from 'infrastructure/logging/logger-tracer.infrastructure';
+import { ExpressServerInfrastructure } from 'infrastructure/server/express-server.infrastructure';
 
 const initializeDependencyInjections = async (): Promise<void> => {
   configureContainers();
-  configureInfrastructures();
-  await configureRepositories();
+  await configureInfrastructures();
   configureMiddlewares();
+  configureLifecycleServices();
   configureControllersAndServices();
-};
-
-const initializeInfrastructureServices = async (): Promise<void> => {
-  await RedisInfrastructure.initialize();
-  await RabbitMQInfrastructure.initialize();
   await initializeSubscribers();
 };
 
 const initializeServer = async (): Promise<http.Server> => {
-  const app = await Container.get(ExpressServerInfrastructure).get();
+  const appServer = new ExpressServerInfrastructure();
+  const app = await appServer.get();
   const server = http.createServer(app);
 
   server.keepAliveTimeout = config.KEEP_ALIVE_TIMEOUT;
@@ -45,33 +41,33 @@ const startServer = (httpServer: http.Server, port: number): void => {
 
 const main = async (): Promise<void> => {
   try {
-    ClusterInfrastructure.initialize();
+    await initializeDependencyInjections();
+
+    const clusterInfrastructure = Container.get(ClusterInfrastructure);
+    clusterInfrastructure.initialize();
 
     if (!cluster.isPrimary) {
-      await initializeDependencyInjections();
-      await initializeInfrastructureServices();
-
       const appServer = await initializeServer();
+      const gracefulShutdownHelper = Container.get(GracefulShutdownHelper);
 
+      handleProcessSignals({ shutdownCallback: gracefulShutdownHelper.shutDown.bind(gracefulShutdownHelper), callbackArgs: [appServer] });
       startServer(appServer, config.PORT);
-
-      handleProcessSignals({ shutdownCallback: ClusterShutdownHelper.shutDown.bind(ClusterShutdownHelper), callbackArgs: [appServer] });
     }
-  } catch (err) {
-    const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
-
-    LoggerTracerInfrastructure.log(`Error during initialization: ${errorMessage}`, 'error');
+  } catch (error) {
+    LoggerTracerInfrastructure.log(`Error during initialization: ${getErrorMessage(error)}`, 'error');
     process.exit(1);
   }
 };
 
-process.on('uncaughtException', () => {
-  LoggerTracerInfrastructure.log('Uncaught exception, exiting process', 'error');
+process.on('uncaughtException', (error) => {
+  LoggerTracerInfrastructure.log(`Uncaught exception: ${getErrorMessage(error)}`, 'error');
+
   process.exit(1);
 });
 
-process.on('unhandledRejection', () => {
-  LoggerTracerInfrastructure.log('Unhandled rejection, exiting process', 'error');
+process.on('unhandledRejection', (reason) => {
+  LoggerTracerInfrastructure.log(`Unhandled rejection: ${getErrorMessage(reason)}`, 'error');
+
   process.exit(1);
 });
 

@@ -2,7 +2,7 @@ import 'reflect-metadata';
 import { DataSource } from 'typeorm';
 
 import { baseConfig } from '../../src/core/configs/datasource.config';
-import { DbConnectionInfrastructure } from '../../src/infrastructure/db-connection.infrastructure';
+import { DbConnectionInfrastructure } from '../../src/infrastructure/database/db-connection.infrastructure';
 
 jest.mock('../../src/core/configs/datasource.config', () => ({
   getDataSourceConfig: jest.fn(() => ({
@@ -11,10 +11,18 @@ jest.mock('../../src/core/configs/datasource.config', () => ({
 }));
 
 jest.mock('typeorm', () => {
+  let isInitialized = false;
+
   const mockDataSource = {
-    initialize: jest.fn().mockResolvedValue(undefined),
-    destroy: jest.fn().mockResolvedValue(undefined),
-    isInitialized: false
+    initialize: jest.fn().mockImplementation(async () => {
+      isInitialized = true;
+    }),
+    destroy: jest.fn().mockImplementation(async () => {
+      isInitialized = false;
+    }),
+    get isInitialized() {
+      return isInitialized;
+    }
   };
 
   return {
@@ -22,52 +30,40 @@ jest.mock('typeorm', () => {
   };
 });
 
-jest.mock('../../src/domain/entities/invoice.entity', () => ({}));
-jest.mock('../../src/domain/entities/order.entity', () => ({}));
-jest.mock('../../src/domain/entities/role.entity', () => ({}));
-jest.mock('../../src/domain/entities/user.entity', () => ({}));
-
 describe('DbConnectionInfrastructure', () => {
+  let dbConnection: DbConnectionInfrastructure;
   let dataSource: DataSource;
 
   beforeEach(() => {
     jest.clearAllMocks();
+    dbConnection = new DbConnectionInfrastructure();
+    dataSource = dbConnection.create();
   });
 
   test('should create a data source instance', () => {
-    dataSource = DbConnectionInfrastructure.create();
     expect(dataSource).toBeDefined();
     expect(DataSource).toHaveBeenCalledTimes(1);
   });
 
   test('should initialize the data source', async () => {
-    dataSource = DbConnectionInfrastructure.create();
     await dataSource.initialize();
     expect(dataSource.initialize).toHaveBeenCalledTimes(1);
   });
 
   test('should return true for isConnected when initialized', async () => {
-    let isConnected = false;
-    dataSource = DbConnectionInfrastructure.create();
     await dataSource.initialize();
-    isConnected = true;
-    expect(isConnected).toBe(true);
+    expect(dbConnection.isConnected()).toBe(true);
   });
 
   test('should disconnect the data source', async () => {
-    dataSource = DbConnectionInfrastructure.create();
     await dataSource.initialize();
-    await DbConnectionInfrastructure.disconnect();
-    expect(dataSource.destroy).toHaveBeenCalledTimes(0);
+    await dbConnection.disconnect();
+    expect(dataSource.destroy).toHaveBeenCalledTimes(1);
   });
 
   test('should return false for isConnected when disconnected', async () => {
-    let isConnected = true;
-    dataSource = DbConnectionInfrastructure.create();
     await dataSource.initialize();
-    await DbConnectionInfrastructure.disconnect();
-    isConnected = false;
-    expect(isConnected).toBe(false);
+    await dbConnection.disconnect();
+    expect(dbConnection.isConnected()).toBe(false);
   });
 });
-

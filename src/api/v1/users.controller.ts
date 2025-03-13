@@ -16,10 +16,14 @@ import { swaggerSchemas } from 'application/helpers/swagger-schemas.helper';
 
 @JsonController(createVersionedRoute({ controllerPath: '/users', version: 'v1' }))
 export class UsersController {
-  private userService: IUserService;
+  private _userService: IUserService;
 
-  constructor () {
-    this.userService = ContainerHelper.get<IUserService>(ContainerItems.IUserService);
+  private get userService (): IUserService {
+    if (!this._userService) {
+      this._userService = ContainerHelper.get<IUserService>(ContainerItems.IUserService);
+    }
+
+    return this._userService;
   }
 
   @Authorized([Roles.GlobalAdmin, Roles.Admin])

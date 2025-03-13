@@ -1,14 +1,15 @@
 import { Container } from 'typedi';
 
-import { queryResults } from 'application/helpers/utility-functions.helper';
+import { getErrorMessage, queryResults } from 'application/helpers/utility-functions.helper';
 import { RedisDecorator } from 'core/decorators/redis.decorator';
-import { REDIS_CACHE_KEYS } from 'core/types/decorator.types';
+import { REDIS_CACHE_KEYS } from 'core/types/redis-cache-keys.type';
 import { ResponseResults } from 'core/types/response-results.type';
 import { GetQueryResultsArgs } from 'core/inputs/get-query-results.args';
 import { CreateOrderArgs } from 'core/inputs/create-order.args';
 import { OrderApproveOrCancelArgs } from 'core/inputs/order-approve-or-cancel.args';
 import { BadRequestError, DatabaseConnectionError } from 'core/errors';
 import { EventPublisherDecorator } from 'core/decorators/event-publisher.decorator';
+import { redisCacheConfig } from 'core/configs/redis.config';
 import { OrderRepository } from 'domain/repositories/order.repository';
 import { ResultMessage } from 'domain/enums/result-message.enum';
 import { OrderDto } from 'domain/dto/order.dto';
@@ -20,25 +21,36 @@ import { EVENTS } from 'domain/enums/events.enum';
 import User from 'domain/entities/user.entity';
 import Order from 'domain/entities/order.entity';
 import Invoice from 'domain/entities/invoice.entity';
-import { DbConnectionInfrastructure } from 'infrastructure/db-connection.infrastructure';
+import { DbConnectionInfrastructure } from 'infrastructure/database/db-connection.infrastructure';
 
 export interface IOrderService {
   get (query: GetQueryResultsArgs): Promise<ResponseResults<OrderDto>>;
-  createOrder(currentUser: UserDto, args: CreateOrderArgs): Promise<ResponseResults<OrderDto>>;
-  approveOrder(currentUser: UserDto, orderId: number): Promise<ResponseResults<OrderDto>>;
-  cancelOrder(currentUser: UserDto, orderId: number): Promise<ResponseResults<OrderDto>>;
+  createOrder (currentUser: UserDto, args: CreateOrderArgs): Promise<ResponseResults<OrderDto>>;
+  approveOrder (currentUser: UserDto, orderId: number): Promise<ResponseResults<OrderDto>>;
+  cancelOrder (currentUser: UserDto, orderId: number): Promise<ResponseResults<OrderDto>>;
 }
 
 export class OrderService implements IOrderService {
-  private orderRepository: OrderRepository;
-  private userRepository: UserRepository;
+  private _orderRepository?: OrderRepository;
+  private _userRepository?: UserRepository;
 
-  constructor () {
-    this.orderRepository = Container.get(OrderRepository);
-    this.userRepository = Container.get(UserRepository);
+  private get orderRepository (): OrderRepository {
+    if (!this._orderRepository) {
+      this._orderRepository = Container.get(OrderRepository);
+    }
+
+    return this._orderRepository;
   }
 
-  @RedisDecorator<OrderDto>({ keyTemplate: REDIS_CACHE_KEYS.ORDER_INVOICE_GET_LIST })
+  private get userRepository (): UserRepository {
+    if (!this._userRepository) {
+      this._userRepository = Container.get(UserRepository);
+    }
+
+    return this._userRepository;
+  }
+
+  @RedisDecorator(redisCacheConfig.ORDER_LIST)
   async get (query: GetQueryResultsArgs) {
     const { payloads, total } = await queryResults({ repository: this.orderRepository, query, dtoClass: OrderDto });
 
@@ -96,7 +108,8 @@ export class OrderService implements IOrderService {
   private async processOrderApproveOrCancel (args: OrderApproveOrCancelArgs) {
     const { userId, orderId, newOrderStatus, newInvoiceStatus, serviceName } = args;
 
-    const dataSource = DbConnectionInfrastructure.getDataSource();
+    const db = Container.get(DbConnectionInfrastructure);
+    const dataSource = db.getDataSource();
     if (!dataSource) {
       throw new DatabaseConnectionError({ dbName: serviceName });
     }
@@ -122,10 +135,8 @@ export class OrderService implements IOrderService {
 
       return { result: ResultMessage.SUCCEED };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'DB operation failed';
-
       await queryRunner.rollbackTransaction();
-      throw new BadRequestError(errorMessage);
+      throw new BadRequestError(getErrorMessage(error));
     } finally {
       await queryRunner.release();
     }

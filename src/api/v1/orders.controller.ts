@@ -13,10 +13,14 @@ import { UserDto } from 'domain/dto/user.dto';
 
 @JsonController(createVersionedRoute({ controllerPath: '/orders', version: 'v1' }))
 export class OrdersController {
-  private orderService: IOrderService;
+  private _orderService: IOrderService;
 
-  constructor () {
-    this.orderService = ContainerHelper.get<IOrderService>(ContainerItems.IOrderService);
+  private get orderService (): IOrderService {
+    if (!this._orderService) {
+      this._orderService = ContainerHelper.get<IOrderService>(ContainerItems.IOrderService);
+    }
+
+    return this._orderService;
   }
 
   @Authorized([Roles.GlobalAdmin, Roles.Admin])

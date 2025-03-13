@@ -5,35 +5,26 @@ import { ObjectLiteral } from 'typeorm';
 import { ContainerHelper } from 'application/ioc/helpers/container.helper';
 import config from 'core/configs/app.config';
 import passwordConfig from 'core/configs/password.config';
-import { RedisCacheKeys } from 'core/types/decorator.types';
-import { ServiceInitializationOptions } from 'domain/interfaces/service-initialization-options.interface';
-import { EnsureInitializedOptions } from 'domain/interfaces/ensure-initialized-options.interface';
-import { HandleProcessSignalsOptions } from 'domain/interfaces/handle-process-signals-options.interface';
-import { RegisterServiceOptions } from 'domain/interfaces/register-service-options.interface';
-import { GenerateCacheKeyOptions } from 'domain/interfaces/generate-cache-key-options.interface';
-import { CompareValuesOptions } from 'domain/interfaces/compare-values-options.interface';
-import { QueryResultsOptions } from 'domain/interfaces/query-results-options.interface';
-import { CreateVersionedRouteOptions } from 'domain/interfaces/create-versioned-route-options.interface';
-import { GeneratePasswordOptions } from 'domain/interfaces/generate-password-options.interface';
-import { LoggerTracerInfrastructure } from 'infrastructure/logger-tracer.infrastructure';
+import { RedisCacheKeys } from 'core/types/redis-cache-keys.type';
+import {
+  ServiceInitializationOptions,
+  HandleProcessSignalsOptions,
+  RegisterServiceOptions,
+  GenerateCacheKeyOptions,
+  QueryResultsOptions,
+  CreateVersionedRouteOptions,
+  GeneratePasswordOptions
+} from 'domain/interfaces/utility-functions-options.interface';
+import { EVENTS } from 'domain/enums/events.enum';
+import { LoggerTracerInfrastructure } from 'infrastructure/logging/logger-tracer.infrastructure';
 
 export const safelyInitializeService = async ({ serviceName, initializeFn }: ServiceInitializationOptions): Promise<void> => {
   try {
     await initializeFn();
-  } catch (err) {
-    const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred';
-
-    LoggerTracerInfrastructure.log(`${serviceName} initialization failed: ${errorMessage}`, 'error');
-    throw err;
+  } catch (error) {
+    LoggerTracerInfrastructure.log(`${serviceName} initialization failed: ${getErrorMessage(error)}`, 'error');
+    throw error;
   }
-};
-
-export const ensureInitialized = <T> ({ connection, serviceName }: EnsureInitializedOptions<T>): T => {
-  if (!connection) {
-    throw new Error(`${serviceName} is not initialized. Call initialize() first.`);
-  }
-
-  return connection;
 };
 
 export const getEnvVariable = (key: string): string => {
@@ -46,7 +37,7 @@ export const getEnvVariable = (key: string): string => {
 };
 
 export const handleProcessSignals = <Args extends unknown[]> ({ shutdownCallback, callbackArgs }: HandleProcessSignalsOptions<Args>): void => {
-  ['SIGINT', 'SIGTERM'].forEach(signal => process.on(signal, async () => await shutdownCallback(...callbackArgs)));
+  ['SIGINT', 'SIGTERM', 'SIGUSR2'].forEach(signal => process.on(signal, async () => await shutdownCallback(...callbackArgs)));
 };
 
 export const registerService = <T> ({ id, service, isSingleton = true }: RegisterServiceOptions<T>): void => {
@@ -59,21 +50,6 @@ export const generateCacheKey = ({ keyTemplate, args }: GenerateCacheKeyOptions)
   const cacheKey = `${keyTemplate}:${argsHash}`;
 
   return { cacheKey, ttl };
-};
-
-export const compareValues = <T> ({ a, b, key, sortOrder }: CompareValuesOptions<T>): number => {
-  const valA = a[key];
-  const valB = b[key];
-
-  if (typeof valA === 'string' && typeof valB === 'string') {
-    return sortOrder === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
-  } else if (typeof valA === 'number' && typeof valB === 'number') {
-    return sortOrder === 'asc' ? valA - valB : valB - valA;
-  } else if (valA instanceof Date && valB instanceof Date) {
-    return sortOrder === 'asc' ? valA.getTime() - valB.getTime() : valB.getTime() - valA.getTime();
-  } else {
-    return 0;
-  }
 };
 
 export const queryResults = async <T extends ObjectLiteral, DTO, RelatedDTO = unknown> (
@@ -135,4 +111,12 @@ export const generateStrongPassword = ({ length = passwordConfig.PASSWORD_LENGTH
   password = password.sort(() => Math.random() - 0.5);
 
   return password.join('');
+};
+
+export const getErrorMessage = (error: unknown): string => {
+  return error instanceof Error ? error.message : String(error);
+};
+
+export const handleEvent = async <T> (event: EVENTS, message: T) => {
+  LoggerTracerInfrastructure.log(`Handling ${event} event: ${JSON.stringify(message)}`);
 };

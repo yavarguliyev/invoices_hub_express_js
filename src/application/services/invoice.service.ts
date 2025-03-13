@@ -2,9 +2,9 @@ import { Container } from 'typedi';
 
 import { queryResults } from 'application/helpers/utility-functions.helper';
 import { RedisDecorator } from 'core/decorators/redis.decorator';
-import { REDIS_CACHE_KEYS } from 'core/types/decorator.types';
 import { ResponseResults } from 'core/types/response-results.type';
 import { GetQueryResultsArgs } from 'core/inputs/get-query-results.args';
+import { redisCacheConfig } from 'core/configs/redis.config';
 import { InvoiceRepository } from 'domain/repositories/invoice.repository';
 import { InvoiceDto } from 'domain/dto/invoice.dto';
 import { ResultMessage } from 'domain/enums/result-message.enum';
@@ -14,13 +14,17 @@ export interface IInvoiceService {
 }
 
 export class InvoiceService implements IInvoiceService {
-  private invoiceRepository: InvoiceRepository;
+  private _invoiceRepository?: InvoiceRepository;
 
-  constructor () {
-    this.invoiceRepository = Container.get(InvoiceRepository);
+  private get invoiceRepository (): InvoiceRepository {
+    if (!this._invoiceRepository) {
+      this._invoiceRepository = Container.get(InvoiceRepository);
+    }
+
+    return this._invoiceRepository;
   }
 
-  @RedisDecorator<InvoiceDto>({ keyTemplate: REDIS_CACHE_KEYS.ORDER_INVOICE_GET_LIST })
+  @RedisDecorator(redisCacheConfig.INVOICE_LIST)
   async get (query: GetQueryResultsArgs) {
     const { payloads, total } = await queryResults({ repository: this.invoiceRepository, query, dtoClass: InvoiceDto });
 
