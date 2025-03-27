@@ -1,6 +1,7 @@
 import { createClient, RedisClientType } from 'redis';
 
-import { safelyInitializeService, getEnvVariable, getErrorMessage } from 'application/helpers/utility-functions.helper';
+import { safelyInitializeService, getErrorMessage } from 'application/helpers/utility-functions.helper';
+import { redisConfig } from 'core/configs/redis.config';
 import { Variables } from 'domain/enums/variables.enum';
 import { LoggerTracerInfrastructure } from 'infrastructure/logging/logger-tracer.infrastructure';
 
@@ -12,11 +13,11 @@ export class RedisInfrastructure {
       serviceName: Variables.REDIS,
       initializeFn: async () => {
         if (!this.client) {
-          const port = getEnvVariable(Variables.REDIS_PORT);
+          const port = redisConfig.REDIS_PORT;
 
           this.client = createClient({
-            socket: { host: getEnvVariable(Variables.REDIS_HOST), port: parseInt(port, 10) },
-            password: getEnvVariable(Variables.REDIS_PASSWORD)
+            socket: { host: redisConfig.REDIS_HOST, port },
+            password: redisConfig.REDIS_PASSWORD
           });
 
           await this.client.connect();

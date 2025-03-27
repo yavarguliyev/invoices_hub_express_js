@@ -4,7 +4,7 @@ import { ObjectLiteral } from 'typeorm';
 
 import { ContainerHelper } from 'application/ioc/helpers/container.helper';
 import config from 'core/configs/app.config';
-import passwordConfig from 'core/configs/password.config';
+import { passwordConfig } from 'core/configs/password.config';
 import { RedisCacheKeys } from 'core/types/redis-cache-keys.type';
 import {
   ServiceInitializationOptions,
@@ -25,15 +25,6 @@ export const safelyInitializeService = async ({ serviceName, initializeFn }: Ser
     LoggerTracerInfrastructure.log(`${serviceName} initialization failed: ${getErrorMessage(error)}`, 'error');
     throw error;
   }
-};
-
-export const getEnvVariable = (key: string): string => {
-  const value = process.env[key];
-  if (!value) {
-    throw new Error(`Environment variable ${key} is not defined`);
-  }
-
-  return value;
 };
 
 export const handleProcessSignals = <Args extends unknown[]> ({ shutdownCallback, callbackArgs }: HandleProcessSignalsOptions<Args>): void => {

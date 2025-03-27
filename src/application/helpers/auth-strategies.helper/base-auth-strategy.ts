@@ -13,4 +13,4 @@ export abstract class BaseAuthStrategy implements IBaseAuthStrategy {
   isTypeOfAuthStrategy (options: AuthStrategyType): boolean {
     return this.currentStrategy === options;
   }
-};
+}

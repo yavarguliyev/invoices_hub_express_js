@@ -1,6 +1,7 @@
 import { connect, Channel, Connection, ConsumeMessage } from 'amqplib';
 
-import { safelyInitializeService, getEnvVariable } from 'application/helpers/utility-functions.helper';
+import { safelyInitializeService } from 'application/helpers/utility-functions.helper';
+import { rabitmqConfig } from 'core/configs/rabbitmq.config';
 import { Variables } from 'domain/enums/variables.enum';
 import { LoggerTracerInfrastructure } from 'infrastructure/logging/logger-tracer.infrastructure';
 
@@ -12,7 +13,7 @@ export class RabbitMQInfrastructure {
     await safelyInitializeService({
       serviceName: Variables.RABBIT_MQ,
       initializeFn: async () => {
-        const connection = await connect(getEnvVariable(Variables.RABBITMQ_URL));
+        const connection = await connect(rabitmqConfig.RABBITMQ_URL);
 
         this.connection = connection;
         this.channel = await connection.createChannel();

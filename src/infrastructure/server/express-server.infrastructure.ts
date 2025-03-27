@@ -16,8 +16,8 @@ import { authorizationChecker, currentUserChecker } from 'application/helpers/au
 import { getSchemasList } from 'application/helpers/swagger-schemas.helper';
 import { GlobalErrorHandlerMiddleware, globalErrorHandler } from 'core/middlewares/error-handler.middleware';
 import { HelmetMiddleware } from 'core/middlewares/helmet.middleware';
-import passportConfig from 'core/configs/passport.config';
-import swaggerConfig from 'core/configs/swagger.config';
+import { passportConfig } from 'core/configs/passport.config';
+import { swaggerConfig } from 'core/configs/swagger.config';
 import { NotFoundError } from 'core/errors';
 import { AuthStrategiesInfrastructure } from 'infrastructure/auth/auth-strategies.infrastructure';
 

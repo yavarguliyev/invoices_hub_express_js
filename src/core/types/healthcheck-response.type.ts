@@ -6,4 +6,4 @@ export type HealthcheckResponse = {
   db: 'healthy' | 'unhealthy';
   redis: 'healthy' | 'unhealthy';
   rabbitMQ: 'healthy' | 'unhealthy';
-};
+}

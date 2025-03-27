@@ -9,7 +9,7 @@ export const redisConfig = {
   REDIS_HOST: process.env.REDIS_HOST,
   REDIS_PASSWORD: process.env.REDIS_PASSWORD,
   REDIS_DEFAULT_CACHE_TTL: Number(process.env.REDIS_DEFAULT_CACHE_TTL) || 3600
-} as const;
+};
 
 export const redisCacheConfig: RedisCacheConfig = {
   ROLE_LIST: { keyTemplate: REDIS_CACHE_KEYS.USER_GET_LIST },

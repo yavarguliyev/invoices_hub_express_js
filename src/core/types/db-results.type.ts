@@ -1,1 +1,1 @@
-export type IEntityWithId<T extends object = {}> = T & { id: number | string };
+export type IEntityWithId<T extends object = {}> = T & { id: number | string }

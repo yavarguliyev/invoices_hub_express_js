@@ -5,4 +5,4 @@ export type ResponseResults<T> = {
   payload?: T;
   total?: number;
   result: ResultMessage;
-};
+}

@@ -6,7 +6,7 @@ import { SigninArgs } from 'core/inputs/signin.args';
 import { NotAuthorizedError } from 'core/errors';
 import { LoginResponse } from 'core/types/login-response.type';
 import { GenerateLoginResponse } from 'core/types/generate-login-response.type';
-import passportConfig from 'core/configs/passport.config';
+import { passportConfig } from 'core/configs/passport.config';
 import { UserRepository } from 'domain/repositories/user.repository';
 import { ResultMessage } from 'domain/enums/result-message.enum';
 import { LoggerTracerInfrastructure } from 'infrastructure/logging/logger-tracer.infrastructure';
