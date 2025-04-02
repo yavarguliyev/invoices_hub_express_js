@@ -392,7 +392,7 @@ http://localhost:3000/api-docs/#/
 #### A Postman collection file is also included for testing API use cases:
 
 ```javascript
-/postman/invoice_hub.postman_collection.json
+/postman/invoice_hub_express_js.postman_collection.json
 ```
 
 # 🚀▶️💻 Running the Application
