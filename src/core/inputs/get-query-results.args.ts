@@ -15,7 +15,7 @@ export class GetQueryResultsArgs {
     @IsOptional()
     @IsObject()
     @Type(() => Object)
-    filters: Record<string, any> = {};
+    filters: Record<string, unknown> = {};
 
     @IsOptional()
     @IsObject()

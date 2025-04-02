@@ -1,7 +1,7 @@
 import cluster from 'cluster';
 
 import { getErrorMessage } from 'application/helpers/utility-functions.helper';
-import config from 'core/configs/app.config';
+import { appConfig } from 'core/configs/app.config';
 import { LoggerTracerInfrastructure } from 'infrastructure/logging/logger-tracer.infrastructure';
 
 export class ClusterInfrastructure {
@@ -25,7 +25,7 @@ export class ClusterInfrastructure {
   }
 
   private setupPrimaryProcess (): void {
-    const numCPUs = config.CLUSTER_WORKERS;
+    const numCPUs = appConfig.CLUSTER_WORKERS;
     this.forkWorkers(numCPUs);
   }
 

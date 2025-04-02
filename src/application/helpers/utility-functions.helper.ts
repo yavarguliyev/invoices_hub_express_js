@@ -3,7 +3,7 @@ import { plainToInstance } from 'class-transformer';
 import { ObjectLiteral } from 'typeorm';
 
 import { ContainerHelper } from 'application/ioc/helpers/container.helper';
-import config from 'core/configs/app.config';
+import { appConfig } from 'core/configs/app.config';
 import { passwordConfig } from 'core/configs/password.config';
 import { RedisCacheKeys } from 'core/types/redis-cache-keys.type';
 import {
@@ -15,7 +15,6 @@ import {
   CreateVersionedRouteOptions,
   GeneratePasswordOptions
 } from 'domain/interfaces/utility-functions-options.interface';
-import { EVENTS } from 'domain/enums/events.enum';
 import { LoggerTracerInfrastructure } from 'infrastructure/logging/logger-tracer.infrastructure';
 
 export const safelyInitializeService = async ({ serviceName, initializeFn }: ServiceInitializationOptions): Promise<void> => {
@@ -36,7 +35,7 @@ export const registerService = <T> ({ id, service, isSingleton = true }: Registe
 };
 
 export const generateCacheKey = ({ keyTemplate, args }: GenerateCacheKeyOptions): RedisCacheKeys => {
-  const ttl = config.REDIS_DEFAULT_CACHE_TTL;
+  const ttl = appConfig.REDIS_DEFAULT_CACHE_TTL;
   const argsHash = crypto.createHash('md5').update(JSON.stringify(args)).digest('hex');
   const cacheKey = `${keyTemplate}:${argsHash}`;
 
@@ -106,8 +105,4 @@ export const generateStrongPassword = ({ length = passwordConfig.PASSWORD_LENGTH
 
 export const getErrorMessage = (error: unknown): string => {
   return error instanceof Error ? error.message : String(error);
-};
-
-export const handleEvent = async <T> (event: EVENTS, message: T) => {
-  LoggerTracerInfrastructure.log(`Handling ${event} event: ${JSON.stringify(message)}`);
 };

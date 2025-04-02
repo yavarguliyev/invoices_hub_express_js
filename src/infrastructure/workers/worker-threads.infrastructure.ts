@@ -2,7 +2,7 @@ import { Worker } from 'worker_threads';
 import path from 'path';
 
 import { WorkerThreadsTask } from 'core/types/worker-threads-task.type';
-import appConfig from 'core/configs/app.config';
+import { appConfig } from 'core/configs/app.config';
 import { LoggerTracerInfrastructure } from 'infrastructure/logging/logger-tracer.infrastructure';
 
 export class WorkerThreadsInfrastructure {

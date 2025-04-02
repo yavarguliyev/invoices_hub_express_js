@@ -17,4 +17,10 @@ export class InvoiceDto {
 
   @Expose()
   status: InvoiceStatus;
+
+  @Expose()
+  userId: number;
+
+  @Expose()
+  orderId: number;
 }

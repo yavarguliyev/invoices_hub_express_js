@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { Request } from 'express';
 
 import { UserDto } from 'domain/dto/user.dto';
 
@@ -15,9 +15,7 @@ export interface AuthenticationInfo {
 }
 
 export interface ExpressContext {
-  redisData?: { eventChannel: string, responseChannel: string };
   request: Request;
-  response?: Response;
   tokenData: JwtPayload;
   currentUser?: UserDto;
   token: string;

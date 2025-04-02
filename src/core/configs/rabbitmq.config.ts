@@ -2,6 +2,8 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-export const rabitmqConfig = {
+const rabitmqConfig = {
   RABBITMQ_URL: process.env.RABBITMQ_URL
 };
+
+export { rabitmqConfig };

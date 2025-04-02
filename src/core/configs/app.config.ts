@@ -19,4 +19,4 @@ const appConfig = {
   WORKER_FILE_DIRECTION: process.env.WORKER_FILE_DIRECTION
 };
 
-export default appConfig;
+export { appConfig };

@@ -1,27 +1,15 @@
 import { JsonController, Get, Authorized, QueryParams } from 'routing-controllers';
 import { OpenAPI } from 'routing-controllers-openapi';
 
+import { BaseController } from 'api/base-controller';
 import { swaggerSchemas } from 'application/helpers/swagger-schemas.helper';
 import { createVersionedRoute } from 'application/helpers/utility-functions.helper';
-import { ContainerHelper } from 'application/ioc/helpers/container.helper';
-import { ContainerItems } from 'application/ioc/static/container-items';
-import { IInvoiceService } from 'application/services/invoice.service';
 import { GetQueryResultsArgs } from 'core/inputs/get-query-results.args';
 import { Roles } from 'domain/enums/roles.enum';
 
+@Authorized([Roles.GlobalAdmin, Roles.Admin])
 @JsonController(createVersionedRoute({ controllerPath: '/invoices', version: 'v1' }))
-export class InvoicesController {
-  private _invoiceService: IInvoiceService;
-
-  private get invoiceService (): IInvoiceService {
-    if (!this._invoiceService) {
-      this._invoiceService = ContainerHelper.get<IInvoiceService>(ContainerItems.IInvoiceService);
-    }
-
-    return this._invoiceService;
-  }
-
-  @Authorized([Roles.GlobalAdmin, Roles.Admin])
+export class InvoicesController extends BaseController {
   @Get('/')
   @OpenAPI(swaggerSchemas.invoices.getInvoicesList)
   async get (@QueryParams() query: GetQueryResultsArgs) {

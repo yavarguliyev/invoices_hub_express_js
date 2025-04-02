@@ -4,7 +4,7 @@ import cluster from 'cluster';
 
 import { RetryHelper } from 'application/helpers/retry.helper';
 import { getErrorMessage } from 'application/helpers/utility-functions.helper';
-import config from 'core/configs/app.config';
+import { appConfig } from 'core/configs/app.config';
 import { RedisInfrastructure } from 'infrastructure/redis/redis.infrastructure';
 import { RabbitMQInfrastructure } from 'infrastructure/rabbitmq/rabbitmq.infrastructure';
 import { LoggerTracerInfrastructure } from 'infrastructure/logging/logger-tracer.infrastructure';
@@ -12,9 +12,9 @@ import { DbConnectionInfrastructure } from 'infrastructure/database/db-connectio
 import { WorkerThreadsInfrastructure } from 'infrastructure/workers/worker-threads.infrastructure';
 
 export class GracefulShutdownHelper {
-  private readonly shutdownTimeout = config.SHUT_DOWN_TIMER;
-  private readonly maxRetries = config.SHUTDOWN_RETRIES;
-  private readonly retryDelay = config.SHUTDOWN_RETRY_DELAY;
+  private readonly shutdownTimeout = appConfig.SHUT_DOWN_TIMER;
+  private readonly maxRetries = appConfig.SHUTDOWN_RETRIES;
+  private readonly retryDelay = appConfig.SHUTDOWN_RETRY_DELAY;
 
   private rabbitMQ: RabbitMQInfrastructure;
   private redis: RedisInfrastructure;

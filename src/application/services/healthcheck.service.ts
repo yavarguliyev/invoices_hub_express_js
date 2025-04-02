@@ -1,12 +1,12 @@
 import { Container } from 'typedi';
 
+import { appConfig } from 'core/configs/app.config';
 import { HealthcheckResponse } from 'core/types/healthcheck-response.type';
 import { RedisInfrastructure } from 'infrastructure/redis/redis.infrastructure';
 import { RabbitMQInfrastructure } from 'infrastructure/rabbitmq/rabbitmq.infrastructure';
 import { DbConnectionInfrastructure } from 'infrastructure/database/db-connection.infrastructure';
 import { WorkerThreadsInfrastructure } from 'infrastructure/workers/worker-threads.infrastructure';
 import { WorkerThreadsOperations } from 'domain/enums/worker-threads-operations.enum';
-import appConfig from 'core/configs/app.config';
 
 export interface IHealthcheckService {
   healthcheck(): Promise<HealthcheckResponse>;

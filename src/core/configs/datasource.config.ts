@@ -8,7 +8,7 @@ import User from 'domain/entities/user.entity';
 
 dotenv.config();
 
-export const baseConfig: DataSourceOptions = {
+const baseConfig: DataSourceOptions = {
   type: 'postgres',
   host: process.env.DB_DEFAULT_HOST,
   port: Number(process.env.DB_DEFAULT_PORT),
@@ -21,8 +21,10 @@ export const baseConfig: DataSourceOptions = {
   subscribers: []
 };
 
-export const getDataSourceConfig = (includeMigrations = false): DataSourceOptions => {
+const getDataSourceConfig = (includeMigrations = false): DataSourceOptions => {
   return includeMigrations
     ? { ...baseConfig, migrations: ['migrations/*.ts'] }
     : baseConfig;
 };
+
+export { baseConfig, getDataSourceConfig };

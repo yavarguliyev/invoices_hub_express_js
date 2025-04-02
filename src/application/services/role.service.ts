@@ -3,7 +3,7 @@ import { Container } from 'typedi';
 import { queryResults } from 'application/helpers/utility-functions.helper';
 import { RedisDecorator } from 'core/decorators/redis.decorator';
 import { ResponseResults } from 'core/types/response-results.type';
-import { redisCacheConfig } from 'core/configs/redis.config';
+import { REDIS_ROLE_LIST } from 'core/configs/decorators.config';
 import { GetQueryResultsArgs } from 'core/inputs/get-query-results.args';
 import { RoleRepository } from 'domain/repositories/role.repository';
 import { RoleDto } from 'domain/dto/role.dto';
@@ -24,10 +24,10 @@ export class RoleService implements IRoleService {
     return this._roleRepository;
   }
 
-  @RedisDecorator(redisCacheConfig.ROLE_LIST)
+  @RedisDecorator(REDIS_ROLE_LIST)
   async get (query: GetQueryResultsArgs) {
     const { payloads, total } = await queryResults({ repository: this.roleRepository, query, dtoClass: RoleDto });
 
-    return { payloads, total, result: ResultMessage.SUCCEED };
+    return { payloads, total, result: ResultMessage.SUCCESS };
   }
 }

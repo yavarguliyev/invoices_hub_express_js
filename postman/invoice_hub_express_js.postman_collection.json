@@ -1,7 +1,7 @@
 {
 	"info": {
 		"_postman_id": "c6dbc476-2d8a-4462-8508-cbe4256c0448",
-		"name": "invoice_hub",
+		"name": "invoice_hub_express_js",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "11043766"
 	},
@@ -25,7 +25,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{URL}}/api/v1/users?page=1&limit=10",
+							"raw": "{{URL}}/api/v1/users?page=1&limit=20",
 							"host": [
 								"{{URL}}"
 							],
@@ -41,7 +41,7 @@
 								},
 								{
 									"key": "limit",
-									"value": "10"
+									"value": "20"
 								}
 							]
 						}
@@ -72,213 +72,6 @@
 								"api",
 								"v1",
 								"users"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "CREATE",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{invoice_hub_access_token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json",
-								"description": "JSON Type",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"email\": \"john.doe10@example.com\"\n}\n",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{URL}}/api/v1/users",
-							"host": [
-								"{{URL}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"users"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "UPDATE PASSWORD",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{invoice_hub_access_token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "PATCH",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"currentPassword\": \"4cxT$?JXbBNm\",\n  \"password\": \"NewPassword@123\",\n  \"confirmPassword\": \"NewPassword@123\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{URL}}/api/v1/users/4/password",
-							"host": [
-								"{{URL}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"users",
-								"4",
-								"password"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "UPDATE",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{invoice_hub_access_token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "PUT",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json",
-								"description": "JSON Type",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"firstName\": \"John\",\n  \"email\": \"john.doe@example40.com\",\n  \"roleId\": 1\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{URL}}/api/v1/users/4",
-							"host": [
-								"{{URL}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"users",
-								"4"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "DELETE",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{invoice_hub_access_token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json",
-								"description": "JSON Type",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{URL}}/api/v1/users/4",
-							"host": [
-								"{{URL}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"users",
-								"4"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "GET BY ID",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{invoice_hub_access_token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{URL}}/api/v1/users/4",
-							"host": [
-								"{{URL}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"users",
-								"4"
 							]
 						}
 					},
@@ -497,68 +290,6 @@
 								"api",
 								"v1",
 								"orders"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "APPROVE ORDER",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{invoice_hub_access_token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "PATCH",
-						"header": [],
-						"url": {
-							"raw": "{{URL}}/api/v1/orders/13/approve",
-							"host": [
-								"{{URL}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"orders",
-								"13",
-								"approve"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "CANCEL ORDER",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{invoice_hub_access_token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "PATCH",
-						"header": [],
-						"url": {
-							"raw": "{{URL}}/api/v1/orders/14/cancel",
-							"host": [
-								"{{URL}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"orders",
-								"14",
-								"cancel"
 							]
 						}
 					},

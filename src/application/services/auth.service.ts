@@ -76,7 +76,7 @@ export class AuthService implements IAuthService {
 
     const signOptions: SignOptions = { expiresIn: validatedExpiresIn, algorithm: 'HS256' };
     const accessToken = jwt.sign(payload, secretKey, signOptions);
-    const response: LoginResponse = { accessToken, payload, results: ResultMessage.SUCCEED };
+    const response: LoginResponse = { accessToken, payload, results: ResultMessage.SUCCESS };
 
     return response;
   }
