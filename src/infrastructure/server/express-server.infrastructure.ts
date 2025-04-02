@@ -1,10 +1,11 @@
 import { createExpressServer, getMetadataArgsStorage } from 'routing-controllers';
-import { Express } from 'express';
+import { Express, Request } from 'express';
 import { routingControllersToSpec } from 'routing-controllers-openapi';
 import { validationMetadatasToSchemas } from 'class-validator-jsonschema';
 import swaggerUi from 'swagger-ui-express';
 import session from 'express-session';
 import passport from 'passport';
+import { OpenAPIObject, SchemaObject } from 'openapi3-ts';
 
 import { HealthcheckController } from 'api/v1/healthcheck.controller';
 import { AuthController } from 'api/v1/auth.controller';
@@ -19,6 +20,7 @@ import { HelmetMiddleware } from 'core/middlewares/helmet.middleware';
 import { passportConfig } from 'core/configs/passport.config';
 import { swaggerConfig } from 'core/configs/swagger.config';
 import { NotFoundError } from 'core/errors';
+import { RateLimitMiddleware } from 'core/middlewares/rate-limit.middleware';
 import { AuthStrategiesInfrastructure } from 'infrastructure/auth/auth-strategies.infrastructure';
 
 export interface IExpressServerInfrastructure {
@@ -50,7 +52,7 @@ export class ExpressServerInfrastructure implements IExpressServerInfrastructure
 
     const app = createExpressServer({
       controllers,
-      middlewares: [HelmetMiddleware, GlobalErrorHandlerMiddleware],
+      middlewares: [RateLimitMiddleware, HelmetMiddleware, GlobalErrorHandlerMiddleware],
       authorizationChecker,
       currentUserChecker,
       defaultErrorHandler: false
@@ -63,16 +65,31 @@ export class ExpressServerInfrastructure implements IExpressServerInfrastructure
     const storage = getMetadataArgsStorage();
     const openAPISpec = routingControllersToSpec(storage);
 
-    const swaggerMetadataOptions = JSON.parse(swaggerConfig.SWAGGER_METADATA_SCHEMA_OPTION);
-    const validationMetadatasToSchema = validationMetadatasToSchemas(swaggerMetadataOptions);
+    const validationMetadatasToSchema = validationMetadatasToSchemas(swaggerConfig.SWAGGER_METADATA_SCHEMA_OPTION);
     const schemasList = getSchemasList();
 
-    const schemas = { ...validationMetadatasToSchema, ...schemasList };
+    const schemas = { ...validationMetadatasToSchema, ...schemasList } as Record<string, SchemaObject>;
 
-    const components = { ...JSON.parse(swaggerConfig.SWAGGER_COMPONENTS_OPTION), schemas };
-    const security = JSON.parse(swaggerConfig.SWAGGER_SECURITY_OPTION);
+    const components = { ...swaggerConfig.SWAGGER_COMPONENTS_OPTION, schemas };
+    const security = swaggerConfig.SWAGGER_SECURITY_OPTION;
 
-    app.use('/api-docs', swaggerUi.serve, swaggerUi.setup({ ...openAPISpec, components, security }));
+    const swaggerDocument: OpenAPIObject = {
+      ...openAPISpec,
+      components,
+      security,
+      info: swaggerConfig.INFO,
+      servers: swaggerConfig.SERVERS
+    };
+
+    app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument, {
+      swaggerOptions: {
+        persistAuthorization: true,
+        displayRequestDuration: true,
+        docExpansion: 'none',
+        filter: true,
+        showExtensions: true
+      }
+    }));
 
     app.all('*', (req: Request) => {
       throw new NotFoundError(`Cannot find ${req.method} on ${req.url}`);

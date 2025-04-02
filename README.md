@@ -29,48 +29,70 @@
 ## Order Management
 
 * Order Retrieval
-* Fetches a paginated list of orders with filtering options.
-* Uses Redis caching to optimize data retrieval.
-* Creates a new order with PENDING status.
-* Associates the order with the current authenticated user.
-* Publishes an event to notify admins about the new order.
-* Future enhancement: Email notification to admins for approval.
-* Updates order status from PENDING to COMPLETED.
-* Generates an invoice and marks it as PAID.
-* Publishes an event upon approval.
-* Future enhancement: Email notification with an attached invoice.
-* Updates order status from PENDING to CANCELLED.
-* Generates an invoice and marks it as CANCELLED.
-* Publishes an event upon cancellation.
-* Future enhancement: Email notification with an attached invoice.
+  * Fetches a paginated list of orders with filtering options
+  * Uses Redis caching to optimize data retrieval
+  * Implements proper error handling and validation
+* Order Creation
+  * Creates a new order with PENDING status
+  * Associates the order with the current authenticated user
+  * Publishes an event to notify admins about the new order
+  * Implements proper validation and error handling
+* Order Status Updates
+  * Updates order status from PENDING to COMPLETED
+  * Publishes an event to trigger invoice generation
+  * Implements proper validation and error handling
+  * Updates order status from PENDING to CANCELLED
+  * Publishes an event to trigger invoice cancellation
+  * Implements proper validation and error handling
 
----
+## Invoice Management
+
+* Invoice Generation
+  * Handles invoice generation events from order status updates
+  * Implements proper validation and error handling
+  * Uses event-driven architecture for asynchronous processing
+* Invoice Status Management
+  * Updates invoice status (PAID, CANCELLED)
+  * Implements proper validation and error handling
+  * Uses event-driven architecture for status updates
 
 ## User Service
-* Fetches a paginated list of users with filtering options.
-* Retrieves users along with their assigned roles.
-* Uses Redis caching for performance optimization.
-* Fetches a user by ID.
-* Ensures the user exists before returning the data.
-* Validates that an email is unique before creating a user.
-* Assigns a default role if none is specified.
-* Generates a strong password.
-* Publishes an event upon user creation.
-* Future enhancement: Send an email with login credentials.
-* Updates user details, ensuring no duplicate email exists.
-* Publishes an event upon user update.
-* Verifies current password before allowing an update.
-* Ensures password confirmation matches.
-* Encrypts the new password before saving.
-* Publishes an event upon password update.
+* User Management
+  * Fetches a paginated list of users with filtering options
+  * Retrieves users along with their assigned roles
+  * Uses Redis caching for performance optimization
+  * Implements proper validation and error handling
+* User Operations
+  * Creates new users with proper validation
+  * Assigns default roles if none specified
+  * Generates strong passwords
+  * Updates user details with validation
+  * Implements proper error handling
+* Authentication & Authorization
+  * JWT-based authentication
+  * Role-based authorization
+  * Session management
+  * Password encryption and validation
 
----
+## Event-Driven Architecture
 
-## Future Enhancements
+* RabbitMQ Integration
+  * Handles domain events asynchronously
+  * Implements proper error handling
+  * Uses typed events for type safety
+* Event Types
+  * ORDER_APPROVAL_STEP_UPDATE_ORDER_STATUS
+  * ORDER_APPROVAL_STEP_INVOICE_GENERATE
+  * ORDER_FAILED
 
-* Implement email notifications for order approvals, cancellations, and user account creation.
-* Enhance Redis caching to improve query performance further.
-* Introduce logging and monitoring to track system performance and user interactions.
+## API Documentation
+
+* Swagger UI Integration
+  * OpenAPI 3.0 specification
+  * Detailed endpoint documentation
+  * Authentication scheme documentation
+  * Request/Response schemas
+  * Interactive API testing
 
 ---
 
@@ -82,16 +104,15 @@
 
 #### This Node.js application follows a monolithic architecture that is modular and scalable. It uses the principles of Domain-Driven Design (DDD) to ensure that the codebase is well-organized and follows the business domain logic.
 
-* Monolithic: While designed as a monolithic application, it’s built with an architecture that supports easy splitting into microservices should the need arise.
+* Monolithic: While designed as a monolithic application, it's built with an architecture that supports easy splitting into microservices should the need arise.
 * Modular: The application is divided into clear modules like orders, users, invoices, etc., each with its own responsibility. This makes it easy to extend the system with new features.
 * Layered Architecture: It follows a typical layered architecture pattern, separating concerns into layers such as the API layer (controllers), service layer, data access layer (repositories), and domain layer (models).
-* Asynchronous Processing: Worker threads and Redis are used for asynchronous processing, ensuring that long-running tasks (like email notifications) don’t block the main application flow.
-* Event-Driven: The application utilizes RabbitMQ to handle domain events (e.g., order updates, user creation) asynchronously, enabling decoupled communication between components.
+* Asynchronous Processing: Worker threads and Redis are used for asynchronous processing, ensuring that long-running tasks don't block the main application flow.
+* Event-Driven: The application utilizes RabbitMQ to handle domain events asynchronously, enabling decoupled communication between components.
 
 ---
 
 # 🧩🔄⚙️🌐 Interaction Flow in DDD and Architecture
-
 
 ![Interaction Flow in DDD and Architecture](./image/interaction-diagram.png)
 
@@ -105,13 +126,13 @@
 ## 2. Application Layer:
 
 * Services such as OrderService and UserService interact with domain entities to perform operations. They use repositories for data persistence.
-* This layer uses patterns like Command and Observer to handle business logic and notify the system of changes (e.g., notifying the admins when an order is created).
+* This layer uses patterns like Command and Observer to handle business logic and notify the system of changes.
 
 ## 3. Infrastructure Layer:
 
 * Handles the technical details such as PostgreSQL, Redis, RabbitMQ, and email notifications.
 * Redis is used to cache frequently accessed data, reducing load on the database.
-* Worker threads handle tasks asynchronously, such as background processing for email notifications or batch updates.
+* Worker threads handle tasks asynchronously.
 
 ## 4. API Layer:
 
@@ -120,7 +141,7 @@
 
 ## 5. Event-Driven Communication:
 
-* When a significant change occurs (like order approval or user creation), events are published to RabbitMQ to inform other systems or services.
+* When a significant change occurs (like order approval or invoice generation), events are published to RabbitMQ to inform other systems or services.
 
 ---
 
@@ -144,61 +165,56 @@
 
 # 🧩⚙️🛠️📐 Design Patterns
 
-##### The following design patterns have been applied to the system to ensure modularity, flexibility, and scalability:
+##### The following design patterns have been implemented in the system to ensure modularity, flexibility, and scalability:
 
 ## 1. Singleton Pattern
 
-* Used for: Managing the database connection and the Redis cache manager.
-* Why: Ensures that only one instance of the database connection or Redis client is created throughout the application, reducing the overhead and promoting reuse.
+* Used for: Managing service instances through `ContainerHelper`, authentication strategies in `AuthStrategiesInfrastructure`, and server instance in `ExpressServerInfrastructure`.
+* Why: Ensures that only one instance of critical components is created throughout the application, reducing overhead and promoting reuse.
 
 ## 2. Factory Pattern
 
-* Used for: Creating various service instances based on the application’s configuration.
-* Why: Simplifies object creation and reduces tight coupling between components. Used for creating different database service objects or models.
+* Used for: Creating service instances in `ServerBootstrapper`, authentication strategies in `AuthStrategiesInfrastructure`, and task executors in `WorkerTaskHandler`.
+* Why: Simplifies object creation and reduces tight coupling between components by centralizing object creation logic.
 
 ## 3. Dependency Injection (DI)
 
-* Used for: Injecting dependencies like services, repositories, and controllers into other components, e.g., through the TypeDI library.
-* Why: Decouples the components and ensures that each class only knows about the abstractions, not the specific implementations. This makes testing and maintaining the codebase easier.
+* Used for: Service registration and retrieval through `ContainerHelper`, service injection in `BaseController`, and throughout the application using TypeDI.
+* Why: Decouples components and ensures that each class only knows about abstractions, not specific implementations, making testing and maintenance easier.
 
 ## 4. Observer Pattern
 
-* Used for: Managing state changes and broadcasting changes to subscribers. This is used in parts of the application that require real-time updates, such as pushing notifications or WebSocket-based messages.
-* Why: Provides an efficient way to notify parts of the application that need to act based on state changes.
+* Used for: Event handling through RabbitMQ subscribers (`OrderRabbitMQSubscriber`, `InvoiceRabbitMQSubscriber`, `NotificationRabbitMQSubscriber`).
+* Why: Provides an efficient way to notify parts of the application about state changes and events.
 
 ## 5. Strategy Pattern
 
-* Used for: Implementing different querying strategies (e.g., different REST API response structures).
-* Why: Allows switching between different query response strategies without changing the core logic of the application.
+* Used for: Implementing different authentication strategies in `AuthStrategiesInfrastructure` through `BaseAuthStrategy` and `JwtAuthStrategy`.
+* Why: Allows switching between different authentication methods without changing the core logic.
 
 ## 6. Command Pattern
 
-* Used for: Handling complex workflows or commands like submitting a job to Redis or performing CRUD operations in a transactional manner.
-* Why: Encapsulates requests as objects, allowing parameterization and decoupling of command execution from the client.
+* Used for: Handling different tasks in `WorkerTaskHandler` through `GenericTask` implementation.
+* Why: Encapsulates requests as objects, allowing parameterization and decoupling of command execution.
 
 ## 7. Decorator Pattern
 
-* Used for: Enhancing the functionality of services and controllers dynamically.
-* Why: Allows adding new behavior (e.g., logging, error handling) without modifying existing code, promoting a clean and extendable design.
+* Used for: Event publishing through `EventPublisherDecorator` and cache invalidation through `RedisCacheInvalidateDecorator`.
+* Why: Allows adding new behavior (e.g., event publishing, cache management) without modifying existing code.
 
-## 8. Proxy Pattern
+## 8. Repository Pattern
 
-* Used for: Implementing caching and rate-limiting mechanisms in front of certain APIs.
-* Why: Helps optimize system performance by controlling access to external services, ensuring that expensive operations are cached or rate-limited.
+* Used for: Data access abstraction in various repository classes (`OrderRepository`, `InvoiceRepository`, etc.).
+* Why: Helps decouple database logic from business logic, making it easier to change or optimize data access strategies.
 
-## 9. Repository Pattern
+## 9. Builder Pattern
 
-* Used for: Abstracting the data access layer to provide a more manageable and flexible way to interact with the database.
-* Why: Helps decouple database logic from business logic, making it easier to change or optimize data access strategies without impacting the rest of the application.
+* Used for: Building application components in `ServerBootstrapper` and building strategies in `AuthStrategiesInfrastructure`.
+* Why: Provides a flexible solution for constructing complex objects step by step.
 
-## 10. Builder Pattern
+## 10. Publisher-Subscriber Pattern
 
-* Used for: Constructing complex objects like invoices, user profiles, and report generation in a systematic way.
-* Why: Provides a flexible solution for constructing complex objects step by step, avoiding constructor overloading or complex factory methods.
-
-## 11. Publisher-Subscriber Pattern
-
-* Used for: Domain events trigger integration events that are published to RabbitMQ.
+* Used for: Domain event handling through RabbitMQ infrastructure and various subscribers.
 * Why: Enables asynchronous communication between components through event publishing and handling.
 
 ---
@@ -234,21 +250,6 @@
 ## 6. Composition Over Inheritance
 
 * The project favors composing objects and reusing behavior through composition rather than relying heavily on inheritance.
-
----
-
-# 💻 Technologies
-
-* Node.js: JavaScript runtime for building scalable, event-driven network applications.
-* ExpressJS: Minimalist web framework for Node.js that simplifies routing and middleware management.
-* TypeScript: A statically typed superset of JavaScript that enhances development with compile-time checks.
-* PostgreSQL: Robust relational database for structured data storage, ensuring reliability and ACID compliance.
-* Redis: High-performance, in-memory data structure store, used for caching and managing job queues.
-* Clustering & Worker Threads: Leverages multi-core processors for concurrency, ensuring non-blocking performance.
-* TypeDI: A dependency injection library that promotes clean architecture and scalable dependency management.
-* Swagger: Tool for automatically generating RESTful API documentation, improving collaboration and client integration.
-* Postman Collection: Pre-configured Postman collection for API testing and validation.
-* DataLoader Implementation: Optimizes database queries by batching and caching requests, addressing the N+1 query problem and improving performance in high-volume environments.
 
 ---
 
@@ -472,7 +473,7 @@ yarn loadtest:dev
 
 # 📊 Interpreting the Results
 
-#### After the test, you'll see a summary of requests per second, response times, and possible failures. This helps assess the system’s performance under heavy load.
+#### After the test, you'll see a summary of requests per second, response times, and possible failures. This helps assess the system's performance under heavy load.
 
 ---
 
@@ -490,18 +491,6 @@ yarn loadtest:dev
 }
 ```
 
-### 2. Approve the Order
-
-```javascript
-Endpoint: PATCH {{URL}}/api/v1/orders/{{id}}/approve
-```
-
-### 3. Cancel the Order
-
-```javascript
-Endpoint: PATCH {{URL}}/api/v1/orders/{{id}}/cancel
-```
-
 ---
 
 # 🤝 Contributing
@@ -517,3 +506,20 @@ Endpoint: PATCH {{URL}}/api/v1/orders/{{id}}/cancel
 # 📝 License
 
 #### This project is licensed under the MIT License. See the [LICENSE](https://github.com/yavarguliyev/invoices-hub/blob/master/LICENSE) file for details.
+
+# 💻 Technologies
+
+* Node.js: JavaScript runtime for building scalable, event-driven network applications
+* ExpressJS: Minimalist web framework for Node.js that simplifies routing and middleware management
+* TypeScript: A statically typed superset of JavaScript that enhances development with compile-time checks
+* PostgreSQL: Robust relational database for structured data storage, ensuring reliability and ACID compliance
+* Redis: High-performance, in-memory data structure store, used for caching and managing job queues
+* RabbitMQ: Message broker for handling domain events and asynchronous communication
+* MikroORM: TypeScript ORM for database operations with proper entity management
+* TypeDI: A dependency injection library that promotes clean architecture
+* Swagger: Tool for automatically generating RESTful API documentation
+* Jest: Testing framework for unit and integration tests
+* Passport.js: Authentication middleware for Node.js
+* JWT: JSON Web Tokens for secure authentication
+* DataLoader Implementation: Optimizes database queries by batching and caching requests, addressing the N+1 query problem and improving performance in high-volume environments
+.

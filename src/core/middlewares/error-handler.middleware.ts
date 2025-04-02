@@ -20,7 +20,7 @@ const handleErrorResponse = (error: Error, response: Response) => {
   return response.status(400).json({ message: error.message, details: validationErrors });
 };
 
-@Middleware({ type: 'after' })
+@Middleware({ type: 'after', priority: 100 })
 export class GlobalErrorHandlerMiddleware implements ExpressErrorMiddlewareInterface {
   error (error: Error, _req: Request, response: Response, next: NextFunction) {
     if (!response.headersSent) {

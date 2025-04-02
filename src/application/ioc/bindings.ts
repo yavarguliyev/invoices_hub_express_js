@@ -10,6 +10,7 @@ import { InvoicesController } from 'api/v1/invoices.controller';
 import { OrdersController } from 'api/v1/orders.controller';
 import { RolesController } from 'api/v1/roles.controller';
 import { UsersController } from 'api/v1/users.controller';
+import { HealthcheckService } from 'application/services/healthcheck.service';
 import { GracefulShutdownHelper } from 'application/helpers/graceful-shutdown.helper';
 import { AuthService } from 'application/services/auth.service';
 import { InvoiceService } from 'application/services/invoice.service';
@@ -26,6 +27,7 @@ import { NotificationRabbitMQSubscriber } from 'application/rabbitMQ/notificatio
 import { HelmetMiddleware } from 'core/middlewares/helmet.middleware';
 import { appConfig } from 'core/configs/app.config';
 import { GlobalErrorHandlerMiddleware } from 'core/middlewares/error-handler.middleware';
+import { RateLimitMiddleware } from 'core/middlewares/rate-limit.middleware';
 import Invoice from 'domain/entities/invoice.entity';
 import Order from 'domain/entities/order.entity';
 import Role from 'domain/entities/role.entity';
@@ -61,6 +63,7 @@ export class ServerBootstrapper {
   ];
 
   private static services = [
+    { id: ContainerItems.IHealthcheckService, service: HealthcheckService } as RegisterServiceOptions<HealthcheckService>,
     { id: ContainerItems.IAuthService, service: AuthService } as RegisterServiceOptions<AuthService>,
     { id: ContainerItems.IRoleService, service: RoleService } as RegisterServiceOptions<RoleService>,
     { id: ContainerItems.IUserService, service: UserService } as RegisterServiceOptions<UserService>,
@@ -116,6 +119,7 @@ export class ServerBootstrapper {
   }
 
   private static configureLifecycleServices () {
+    Container.set(RateLimitMiddleware, new RateLimitMiddleware());
     Container.set(HelmetMiddleware, new HelmetMiddleware());
     Container.set(GlobalErrorHandlerMiddleware, new GlobalErrorHandlerMiddleware());
     Container.set(ClusterInfrastructure, new ClusterInfrastructure());

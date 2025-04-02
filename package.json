@@ -30,6 +30,7 @@
 		"perform:dev": "time curl --get http://localhost:3000/api/v1/healthcheck"
 	},
 	"dependencies": {
+		"@types/express-rate-limit": "^6.0.2",
 		"amqplib": "^0.10.5",
 		"bcrypt": "^5.1.1",
 		"class-transformer": "^0.5.1",
@@ -38,6 +39,7 @@
 		"dataloader": "^2.2.3",
 		"dotenv": "^16.4.7",
 		"express": "^4.21.2",
+		"express-rate-limit": "^7.5.0",
 		"express-session": "^1.18.1",
 		"express-validator": "^7.2.1",
 		"helmet": "^8.0.0",

@@ -51,5 +51,12 @@ declare namespace NodeJS {
     DB_DEFAULT_PASSWORD: string;
     DB_DEFAULT_DATABASE: string;
     DB_CONNECTION: string;
+
+    // Rate Limiting Configuration
+    RATE_LIMIT_WINDOW_MS: string;
+    RATE_LIMIT_MAX_REQUESTS: string;
+    RATE_LIMIT_MESSAGE: string;
+    RATE_LIMIT_ERROR_TITLE: string;
+    RATE_LIMIT_ERROR_MESSAGE: string;
   }
 }
