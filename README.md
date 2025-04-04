@@ -253,6 +253,24 @@
 
 ---
 
+# 💻 Technologies
+
+* Node.js: JavaScript runtime for building scalable, event-driven network applications
+* ExpressJS: Minimalist web framework for Node.js that simplifies routing and middleware management
+* TypeScript: A statically typed superset of JavaScript that enhances development with compile-time checks
+* PostgreSQL: Robust relational database for structured data storage, ensuring reliability and ACID compliance
+* Redis: High-performance, in-memory data structure store, used for caching and managing job queues
+* RabbitMQ: Message broker for handling domain events and asynchronous communication
+* MikroORM: TypeScript ORM for database operations with proper entity management
+* TypeDI: A dependency injection library that promotes clean architecture
+* Swagger: Tool for automatically generating RESTful API documentation
+* Jest: Testing framework for unit and integration tests
+* Passport.js: Authentication middleware for Node.js
+* JWT: JSON Web Tokens for secure authentication
+* DataLoader Implementation: Optimizes database queries by batching and caching requests, addressing the N+1 query problem and improving performance in high-volume environments.
+
+---
+
 # 🚀 Getting Started
 
 ## 1. Prerequisites
@@ -506,20 +524,3 @@ yarn loadtest:dev
 # 📝 License
 
 #### This project is licensed under the MIT License. See the [LICENSE](https://github.com/yavarguliyev/invoices-hub/blob/master/LICENSE) file for details.
-
-# 💻 Technologies
-
-* Node.js: JavaScript runtime for building scalable, event-driven network applications
-* ExpressJS: Minimalist web framework for Node.js that simplifies routing and middleware management
-* TypeScript: A statically typed superset of JavaScript that enhances development with compile-time checks
-* PostgreSQL: Robust relational database for structured data storage, ensuring reliability and ACID compliance
-* Redis: High-performance, in-memory data structure store, used for caching and managing job queues
-* RabbitMQ: Message broker for handling domain events and asynchronous communication
-* MikroORM: TypeScript ORM for database operations with proper entity management
-* TypeDI: A dependency injection library that promotes clean architecture
-* Swagger: Tool for automatically generating RESTful API documentation
-* Jest: Testing framework for unit and integration tests
-* Passport.js: Authentication middleware for Node.js
-* JWT: JSON Web Tokens for secure authentication
-* DataLoader Implementation: Optimizes database queries by batching and caching requests, addressing the N+1 query problem and improving performance in high-volume environments
-.
