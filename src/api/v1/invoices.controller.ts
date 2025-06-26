@@ -1,7 +1,7 @@
 import { JsonController, Get, Authorized, QueryParams } from 'routing-controllers';
 import { OpenAPI } from 'routing-controllers-openapi';
 
-import { BaseController } from 'api/base-controller';
+import { BaseController } from 'api/base.controller';
 import { swaggerSchemas } from 'application/helpers/swagger-schemas.helper';
 import { createVersionedRoute } from 'application/helpers/utility-functions.helper';
 import { GetQueryResultsArgs } from 'core/inputs/get-query-results.args';

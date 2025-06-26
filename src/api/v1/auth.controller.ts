@@ -1,7 +1,7 @@
 import { Body, HeaderParam, JsonController, Post } from 'routing-controllers';
 import { OpenAPI } from 'routing-controllers-openapi';
 
-import { BaseController } from 'api/base-controller';
+import { BaseController } from 'api/base.controller';
 import { swaggerSchemas } from 'application/helpers/swagger-schemas.helper';
 import { createVersionedRoute } from 'application/helpers/utility-functions.helper';
 import { SigninArgs } from 'core/inputs/signin.args';
