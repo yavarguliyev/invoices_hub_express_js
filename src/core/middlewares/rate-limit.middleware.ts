@@ -9,7 +9,6 @@ export class RateLimitMiddleware implements ExpressMiddlewareInterface {
   private limiter = rateLimit(rateLimitConfig);
 
   use (request: Request, response: Response, next: NextFunction): void {
-    console.log('Rate limit middleware executing...');
     this.limiter(request, response, next);
   }
 }
