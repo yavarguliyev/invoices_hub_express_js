@@ -26,7 +26,7 @@ services:
 
   redis:
     container_name: redis_container
-    image: redis:7.0
+    image: redis
     ports:
       - "6379:6379"
     command: ["redis-server", "--requirepass", "your_redis_password"]
@@ -38,7 +38,7 @@ services:
 
   rabbitmq:
     container_name: rabbitmq_container
-    image: rabbitmq:3-management
+    image: rabbitmq
     ports:
       - "5672:5672"
       - "15672:15672"
@@ -53,12 +53,12 @@ services:
 
   postgres:
     container_name: postgres_container
-    image: postgres:13.5-alpine
+    image: postgres:18
     restart: always
     env_file:
       - ./.env
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/18/main
     ports:
       - "54320:5432"
     networks:

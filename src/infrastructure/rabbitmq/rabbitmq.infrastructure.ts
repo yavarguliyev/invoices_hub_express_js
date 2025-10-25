@@ -1,4 +1,4 @@
-import { connect, Channel, Connection, ConsumeMessage } from 'amqplib';
+import * as amqp from 'amqplib';
 
 import { safelyInitializeService } from 'application/helpers/utility-functions.helper';
 import { rabitmqConfig } from 'core/configs/rabbitmq.config';
@@ -6,16 +6,15 @@ import { Variables } from 'domain/enums/variables.enum';
 import { LoggerTracerInfrastructure } from 'infrastructure/logging/logger-tracer.infrastructure';
 
 export class RabbitMQInfrastructure {
-  private channel?: Channel;
-  private connection?: Connection;
+  private channel?: amqp.Channel;
+  private connection?: amqp.Connection;
 
   async initialize (): Promise<void> {
     await safelyInitializeService({
       serviceName: Variables.RABBIT_MQ,
       initializeFn: async () => {
-        const connection = await connect(rabitmqConfig.RABBITMQ_URL);
-
-        this.connection = connection;
+        const connection = await amqp.connect(rabitmqConfig.RABBITMQ_URL);
+        this.connection = connection as unknown as amqp.Connection;
         this.channel = await connection.createChannel();
       }
     });
@@ -46,7 +45,7 @@ export class RabbitMQInfrastructure {
 
     const channel = this.channel;
     if (channel) {
-      channel.consume(queueName, (msg: ConsumeMessage | null) => {
+      channel.consume(queueName, (msg: amqp.ConsumeMessage | null) => {
         if (msg) {
           callback(msg.content.toString());
           channel.ack(msg);
